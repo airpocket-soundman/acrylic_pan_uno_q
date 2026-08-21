@@ -67,11 +67,11 @@ class WebApiTests(unittest.TestCase):
         self.assertIn("判定エリア", page)
         self.assertIn("判定に使用した振動波形", page)
         self.assertIn("振動波形のFFT", page)
-        self.assertEqual(page.count('data-class="'), 8)
+        self.assertEqual(page.count('data-class="'), 12)
         with urlopen(self.base + "/collector.html", timeout=2) as response:
             collector_page = response.read().decode("utf-8")
         self.assertIn("Acrylic Pan Vibration Monitor", collector_page)
-        self.assertIn("8エリア ガイド付きデータ採取", collector_page)
+        self.assertIn("12エリア ガイド付きデータ採取", collector_page)
         self.assertIn("採取開始", collector_page)
         self.assertIn("collectionPattern", collector_page)
         self.assertIn('id="collectionRepetitions" type="number" min="1" max="1000" value="50"', collector_page)
@@ -100,11 +100,11 @@ class WebApiTests(unittest.TestCase):
 
     def test_collection_targets_preview_matches_the_pattern(self):
         _, corners = self.get_json("/api/collection/targets?pattern=corners")
-        self.assertEqual(len(corners["targets"]), 32)
+        self.assertEqual(len(corners["targets"]), 48)
         self.assertEqual(corners["points_per_class"], 4)
         self.assertEqual(corners["panel"], {
             "width_mm": 400.0,
-            "height_mm": 200.0,
+            "height_mm": 300.0,
             "clamp": {"x_min": 200.0, "x_max": 300.0, "y_min": 0.0, "y_max": 20.0},
         })
         self.assertEqual(corners["targets"][0]["target_index"], 0)
@@ -113,7 +113,7 @@ class WebApiTests(unittest.TestCase):
         self.assertEqual((corners["targets"][0]["x_mm"], corners["targets"][0]["y_mm"]), (25.0, 25.0))
 
         _, center = self.get_json("/api/collection/targets?pattern=center")
-        self.assertEqual(len(center["targets"]), 8)
+        self.assertEqual(len(center["targets"]), 12)
         self.assertEqual(center["targets"][0]["x_mm"], 50.0)
         self.assertEqual(center["targets"][0]["y_mm"], 50.0)
 
@@ -239,12 +239,12 @@ class WebApiTests(unittest.TestCase):
         """Every point must be reachable however the operator jumps around."""
         with self.connected_link():
             collection = self.arm_collection(repetitions=1, pattern="center")
-            for target_index in (7, 3, 0, 5, 1, 6, 2, 4):
+            for target_index in (11, 7, 3, 0, 9, 5, 1, 10, 6, 2, 8, 4):
                 self.post_json("/api/collection/select", {"target_index": target_index})
                 self.controller._process_event(make_demo_event(target_index + 1), "serial", True)
 
-        self.assertEqual(collection.target_counts, [1] * 8)
-        self.assertEqual(collection.completed_samples, 8)
+        self.assertEqual(collection.target_counts, [1] * 12)
+        self.assertEqual(collection.completed_samples, 12)
         self.assertFalse(collection.active)
         self.assertTrue(collection.finished)
 
@@ -255,7 +255,7 @@ class WebApiTests(unittest.TestCase):
             self.controller._process_event(make_demo_event(1), "serial", True)
             self.assertTrue(collection.is_complete(2))
 
-            for target_index in (2, 8, -1):
+            for target_index in (2, 12, -1):
                 self.expect_bad_request("/api/collection/select", {"target_index": target_index})
 
     def test_select_requires_an_active_collection(self):
@@ -481,15 +481,15 @@ class WebApiTests(unittest.TestCase):
         with patch.object(type(self.controller.link), "connected", new_callable=PropertyMock, return_value=True):
             started = self.controller.start_collection(2, self.temporary.name)
             self.assertTrue(started["active"])
-            for sequence in range(1, 17):
+            for sequence in range(1, 25):
                 self.controller._process_event(make_demo_event(sequence), "serial", True)
 
         collection = self.controller.collection_status()
         self.assertFalse(collection["active"])
         self.assertTrue(collection["finished"])
-        self.assertEqual(collection["completed_samples"], 16)
-        self.assertEqual(collection["per_class_counts"], [2] * 8)
-        self.assertEqual(len(packets), 16)  # initial START plus one re-arm except after final event
+        self.assertEqual(collection["completed_samples"], 24)
+        self.assertEqual(collection["per_class_counts"], [2] * 12)
+        self.assertEqual(len(packets), 24)  # initial START plus one re-arm except after final event
         self.assertTrue(all(decode_frame(packet).message_type == MessageType.START for packet in packets))
 
         assert self.controller.recorder is not None
@@ -504,13 +504,13 @@ class WebApiTests(unittest.TestCase):
         self.assertEqual(plan["repetitions"], 2)
         self.assertEqual(plan["position_pattern"], "center")
         self.assertEqual(plan["points_per_class"], 1)
-        self.assertEqual(plan["order"], list(range(8)))
+        self.assertEqual(plan["order"], list(range(12)))
         records = [json.loads(line) for line in
                    (session_dir / "manifest.jsonl").read_text(encoding="utf-8").splitlines()]
         self.assertEqual([record["class_id"] for record in records],
-                         [area for area in range(8) for _ in range(2)])
+                         [area for area in range(12) for _ in range(2)])
         self.assertEqual(records[0]["annotations"]["target_area"], 1)
-        self.assertEqual(records[-1]["annotations"]["target_area"], 8)
+        self.assertEqual(records[-1]["annotations"]["target_area"], 12)
         first = records[0]["annotations"]
         self.assertEqual(first["target_point_id"], 0)
         self.assertEqual(first["target_point_name"], "center")
@@ -548,13 +548,13 @@ class WebApiTests(unittest.TestCase):
         self.assertEqual(len(self.controller.latest["samples"]), 2048)
 
     def test_corner_pattern_reproduces_the_specified_50mm_grid(self):
-        """docs/design.md section 3: 32 grid points, X=25..375, Y=25..175."""
+        """Current 4 x 3 plan: 48 fixed points, X=25..375, Y=25..275."""
         corners = build_collection_targets("corners")
-        self.assertEqual(len(corners), 32)
+        self.assertEqual(len(corners), 48)
         grid = sorted({(target.x_mm, target.y_mm) for target in corners})
-        self.assertEqual(len(grid), 32, "every grid point must be distinct")
+        self.assertEqual(len(grid), 48, "every grid point must be distinct")
         expected = sorted(
-            {(x, y) for x in range(25, 400, 50) for y in range(25, 200, 50)}
+            {(x, y) for x in range(25, 400, 50) for y in range(25, 300, 50)}
             - {(225, 25), (275, 25)}
             | {(225.0, 35.0), (275.0, 35.0)}
         )
@@ -597,19 +597,19 @@ class WebApiTests(unittest.TestCase):
             _, payload = self.get_json(path)
             self.assertEqual(payload["panel"]["clamp"], CLAMP_FOOTPRINT_MM)
             self.assertEqual(payload["panel"]["width_mm"], 400.0)
-            self.assertEqual(payload["panel"]["height_mm"], 200.0)
+            self.assertEqual(payload["panel"]["height_mm"], 300.0)
 
     def test_center_pattern_matches_the_specified_teaching_centres(self):
         centers = build_collection_targets("center")
-        self.assertEqual(len(centers), 8)
+        self.assertEqual(len(centers), 12)
         self.assertEqual(
             [(target.x_mm, target.y_mm) for target in centers],
-            [(x, y) for y in (50.0, 150.0) for x in (50.0, 150.0, 250.0, 350.0)],
+            [(x, y) for y in (50.0, 150.0, 250.0) for x in (50.0, 150.0, 250.0, 350.0)],
         )
 
     def test_collection_position_patterns_have_exact_panel_coordinates(self):
         corners = build_collection_targets("corners")
-        self.assertEqual(len(corners), 32)
+        self.assertEqual(len(corners), 48)
         self.assertEqual(
             [(target.point_name, target.x_mm, target.y_mm) for target in corners[:4]],
             [
@@ -620,7 +620,7 @@ class WebApiTests(unittest.TestCase):
             ],
         )
         self.assertEqual(corners[-1].point_name, "down_right")
-        self.assertEqual((corners[-1].x_mm, corners[-1].y_mm), (375.0, 175.0))
+        self.assertEqual((corners[-1].x_mm, corners[-1].y_mm), (375.0, 275.0))
         with self.assertRaisesRegex(ValueError, "center or corners"):
             build_collection_targets("invalid")
         for retired in ("five", "nine"):
@@ -632,7 +632,7 @@ class WebApiTests(unittest.TestCase):
         self.controller.link.send = lambda packet: None
         with patch.object(type(self.controller.link), "connected", new_callable=PropertyMock, return_value=True):
             self.controller.start_collection(1, self.temporary.name, "corners")
-            for sequence in range(1, 33):
+            for sequence in range(1, 49):
                 self.controller._process_event(make_demo_event(sequence), "serial", True)
         assert self.controller.recorder is not None
         assert self.controller.recorder.session_dir is not None
@@ -640,20 +640,20 @@ class WebApiTests(unittest.TestCase):
             self.controller.recorder.session_dir, point_count=4, repetitions=1
         )
         self.assertEqual(len(summaries), 1)
-        self.assertEqual(summaries[0].event_count, 32)
+        self.assertEqual(summaries[0].event_count, 48)
 
     def test_center_collection_is_training_loader_compatible(self):
         self.controller.link.send = lambda packet: None
         with patch.object(type(self.controller.link), "connected", new_callable=PropertyMock, return_value=True):
             self.controller.start_collection(2, self.temporary.name, "center")
-            for sequence in range(1, 17):
+            for sequence in range(1, 25):
                 self.controller._process_event(make_demo_event(sequence), "serial", True)
         assert self.controller.recorder is not None
         assert self.controller.recorder.session_dir is not None
         summaries = validate_guided_collection(
             self.controller.recorder.session_dir, point_count=1, repetitions=2
         )
-        self.assertEqual(summaries[0].event_count, 16)
+        self.assertEqual(summaries[0].event_count, 24)
 
     def test_collection_api_and_stop(self):
         packets = []
@@ -668,8 +668,8 @@ class WebApiTests(unittest.TestCase):
             self.assertEqual(started["current_class_id"], 0)
             self.assertEqual(started["current_point_name"], "up_left")
             self.assertEqual(started["position_pattern"], "corners")
-            self.assertEqual(started["total_samples"], 96)
-            self.assertEqual(len(started["per_position_counts"]), 32)
+            self.assertEqual(started["total_samples"], 144)
+            self.assertEqual(len(started["per_position_counts"]), 48)
             self.controller._process_event(make_demo_event(101), "serial", True)
             progressed = self.controller.collection_status()
             self.assertEqual(progressed["current_point_name"], "up_left")

@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/panel-profile.css?v=20260720-1">
 </head>
 <body><main>
-  <header><div><h1>Acrylic Pan <span data-panel-class-count>8</span>エリア分類</h1><p>実測振動から、たたかれたエリアを表示します</p></div><span id="connection" class="badge">未接続</span></header>
+  <header><div><h1>Acrylic Pan <span data-panel-class-count>12</span>エリア分類</h1><p>実測振動から、たたかれたエリアを表示します</p></div><span id="connection" class="badge">未接続</span></header>
   <nav class="app-tabs" role="tablist" aria-label="動作モード">
     <a role="tab" aria-selected="false" href="/collector.html">学習データ採取</a>
     <a role="tab" aria-selected="true" class="active" href="/">推論結果</a>
@@ -28,8 +28,8 @@
   <section id="stats" class="stats" hidden></section><div id="controlStatus" hidden>接続後、「推論開始」を押してアクリル板をたたいてください。</div><div id="error" class="error"></div>
   <section class="card ai-panel live-inference">
     <div class="ai-toolbar"><h2>判定エリア</h2></div><div id="aiSummary" class="ai-summary">打撃を待っています</div>
-    <div id="hitGrid" class="hit-grid" aria-label="400 × 200 mm アクリル板" aria-live="polite"><div data-class="0">エリア1</div><div data-class="1">エリア2</div><div data-class="2">エリア3</div><div data-class="3">エリア4</div><div data-class="4">エリア5</div><div data-class="5">エリア6</div><div data-class="6">エリア7</div><div data-class="7">エリア8</div></div>
-    <div class="panel-size"><span>← 400 mm →</span><span>高さ 200 mm</span></div>
+    <div id="hitGrid" class="hit-grid" aria-label="400 × 300 mm アクリル板" aria-live="polite"><div data-class="0">エリア1</div><div data-class="1">エリア2</div><div data-class="2">エリア3</div><div data-class="3">エリア4</div><div data-class="4">エリア5</div><div data-class="5">エリア6</div><div data-class="6">エリア7</div><div data-class="7">エリア8</div><div data-class="8">エリア9</div><div data-class="9">エリア10</div><div data-class="10">エリア11</div><div data-class="11">エリア12</div></div>
+    <div class="panel-size"><span>← 400 mm →</span><span>高さ 300 mm</span></div>
     <div id="aiOutputs" class="ai-outputs" hidden></div>
   </section>
   <details class="card diagnostics" hidden><summary>合成データによるAI診断</summary><label>テスト番号 <input id="aiCase" type="number" min="0" max="7" value="0"></label><button id="aiSelftest">1件実行</button><button id="aiRunAll">8件連続実行</button></details>

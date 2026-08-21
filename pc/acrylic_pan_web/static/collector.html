@@ -3,7 +3,7 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Acrylic Pan Vibration Monitor</title><link rel="stylesheet" href="/style.css?v=20260718-4"><link rel="stylesheet" href="/controls.css?v=20260718-1"><link rel="stylesheet" href="/collector.css?v=20260718-4"><link rel="stylesheet" href="/tabs.css?v=20260718-4"><link rel="stylesheet" href="/panel-profile.css?v=20260720-1"></head>
 <body><main>
-  <header><div><h1>Acrylic Pan Vibration Monitor</h1><p>振動データの記録・FFT表示・<span data-panel-class-count>8</span>エリアガイド採取</p></div><span id="connection" class="badge">未接続</span></header>
+  <header><div><h1>Acrylic Pan Vibration Monitor</h1><p>振動データの記録・FFT表示・<span data-panel-class-count>12</span>エリアガイド採取</p></div><span id="connection" class="badge">未接続</span></header>
   <nav class="app-tabs" role="tablist" aria-label="動作モード">
     <a role="tab" aria-selected="true" class="active" href="/collector.html">学習データ採取</a>
     <a role="tab" aria-selected="false" href="/">推論結果</a>
@@ -24,7 +24,7 @@
   <section id="stats" class="stats"></section><div id="controlStatus">「測定トリガー」を押すと、Z軸振動を25.6 kHz・2048点（80 ms）取得します。</div><div id="error" class="error"></div>
   <section class="card collection-panel">
     <div class="collection-toolbar">
-      <div><h2 data-panel-class-label="エリア ガイド付きデータ採取">8エリア ガイド付きデータ採取</h2><p>マーカー位置を叩いてください。受信後、自動的に次の測定を待ち受けます。</p></div>
+      <div><h2 data-panel-class-label="エリア ガイド付きデータ採取">12エリア ガイド付きデータ採取</h2><p>マーカー位置を叩いてください。受信後、自動的に次の測定を待ち受けます。</p></div>
       <label>位置パターン <select id="collectionPattern"><option value="center" selected>A: エリア中心 1点</option><option value="corners">B: 50 mm格子 四隅 4点</option></select></label>
       <label>各位置の回数 <input id="collectionRepetitions" type="number" min="1" max="1000" value="50"></label>
       <button id="collectionStart" disabled>採取開始</button>
@@ -41,12 +41,16 @@
       <div class="collection-cell" data-area="5"><b>エリア6</b><span>0 / 0</span></div>
       <div class="collection-cell" data-area="6"><b>エリア7</b><span>0 / 0</span></div>
       <div class="collection-cell" data-area="7"><b>エリア8</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="8"><b>エリア9</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="9"><b>エリア10</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="10"><b>エリア11</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="11"><b>エリア12</b><span>0 / 0</span></div>
       <div id="collectionClamp" class="collection-clamp" hidden><span>固定具</span></div>
       <div id="collectionPoints" class="collection-points"></div>
       <div id="collectionMarker" class="collection-marker" hidden><span></span></div>
     </div>
     <p class="collection-hint">打点は選んだ位置パターンで表示します。採取中は任意の打点をクリックすると、順序に関係なくその位置へ切り替えられます。</p>
-    <div class="panel-axis"><span>← 400 mm →</span><span>高さ 200 mm</span></div>
+    <div class="panel-axis"><span>← 400 mm →</span><span>高さ 300 mm</span></div>
     <div class="position-progress-wrap">
       <h3>ラベル・打点別の採取件数</h3>
       <div id="positionProgress" class="position-progress" aria-live="polite"></div>

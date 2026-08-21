@@ -189,7 +189,7 @@ def load_recorded_sessions(
 def validate_guided_collection(
     source: Path,
     *,
-    class_count: int = DEFAULT_CLASS_COUNT,
+    class_count: int | None = None,
     point_count: int | None = None,
     repetitions: int | None = None,
 ) -> tuple[GuidedRunSummary, ...]:
@@ -213,6 +213,8 @@ def validate_guided_collection(
     )
     for session_dir in session_dirs:
         metadata = json.loads((session_dir / "session.json").read_text(encoding="utf-8"))
+        collection_plan = metadata.get("user_metadata", {}).get("collection_plan", {})
+        run_class_count = class_count or int(collection_plan.get("area_count", DEFAULT_CLASS_COUNT))
         session_id = str(metadata.get("session_id", ""))
         rows = [json.loads(line) for line in
                 (session_dir / "manifest.jsonl").read_text(encoding="utf-8").splitlines() if line]
@@ -232,7 +234,7 @@ def validate_guided_collection(
             if any(isinstance(value, bool) or not isinstance(value, int)
                    for value in (target_class, target_point, repetition)):
                 raise ValueError(f"{session_dir}: class, point and repetition must be integers")
-            if not 0 <= target_class < class_count or row.get("class_id") != target_class:
+            if not 0 <= target_class < run_class_count or row.get("class_id") != target_class:
                 raise ValueError(f"{session_dir}: target_class_id does not match class_id")
             if target_point < 0 or repetition < 1:
                 raise ValueError(f"{session_dir}: invalid point or repetition")
@@ -268,7 +270,7 @@ def validate_guided_collection(
             raise ValueError(f"{session_dir}: no guided events")
         expected_keys = {
             (class_id, point_id, repeat)
-            for class_id in range(class_count)
+            for class_id in range(run_class_count)
             for point_id in range(expected_points)
             for repeat in range(1, expected_repetitions + 1)
         }

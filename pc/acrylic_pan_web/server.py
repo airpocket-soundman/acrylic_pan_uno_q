@@ -76,11 +76,11 @@ COLLECTION_SAMPLE_RATE_HZ = 25_600
 COLLECTION_SAMPLE_COUNT = 2_048
 COLLECTION_TRIGGER_INDEX = 64
 
-# docs/design.md section 3 defines two acquisition series over the same panel:
-#   A: the eight area centres          -> "center"
-#   B: a 50 mm grid, X=25..375, Y=25..175 -> "corners"
+# The current 4 x 3 panel uses two acquisition series over the same panel:
+#   A: the twelve area centres              -> "center"
+#   B: 48 fixed intra-area points at +/-25 mm -> "corners"
 # Within each 100 x 100 mm area the B grid lands exactly on the four (+-25, +-25)
-# diagonal points, so 8 areas x 4 points reproduces the specified 32 grid points.
+# diagonal points, so 12 areas x 4 points produces 48 nominal teaching points.
 POSITION_PATTERNS: dict[str, tuple[tuple[str, float, float], ...]] = {
     "center": (("center", 0.0, 0.0),),
     "corners": (
@@ -109,7 +109,7 @@ PANEL_PROFILES: dict[str, PanelProfile] = {
         "400x300x5", "400 × 300 × 5 mm（12クラス）", 400.0, 300.0, 5.0, 4, 3
     ),
 }
-DEFAULT_PANEL_PROFILE_ID = "400x200x3"
+DEFAULT_PANEL_PROFILE_ID = "400x300x5"
 
 
 def get_panel_profile(profile_id: str = DEFAULT_PANEL_PROFILE_ID) -> PanelProfile:
@@ -225,7 +225,7 @@ def build_collection_targets(
 
 @dataclass
 class CollectionState:
-    """Progress for eight-area and intra-area targets.
+    """Progress for guided area-centre and intra-area targets.
 
     Targets are normally filled in order, but ``selected_index`` lets the
     operator jump to any incomplete point. Because points can therefore be
@@ -237,13 +237,17 @@ class CollectionState:
     finished: bool = False
     repetitions: int = 0
     completed_samples: int = 0
-    per_class_counts: list[int] = field(default_factory=lambda: [0] * 8)
+    per_class_counts: list[int] = field(
+        default_factory=lambda: [0] * get_panel_profile().class_count
+    )
     position_pattern: str = "center"
     targets: tuple[CollectionTarget, ...] = field(
         default_factory=lambda: build_collection_targets("center")
     )
-    target_counts: list[int] = field(default_factory=lambda: [0] * 8)
-    order: tuple[int, ...] = tuple(range(8))
+    target_counts: list[int] = field(
+        default_factory=lambda: [0] * len(build_collection_targets("center"))
+    )
+    order: tuple[int, ...] = tuple(range(get_panel_profile().class_count))
     selected_index: int | None = None
     panel_profile_id: str = DEFAULT_PANEL_PROFILE_ID
 

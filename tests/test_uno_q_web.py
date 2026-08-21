@@ -83,6 +83,12 @@ class UnoQWebTests(unittest.TestCase):
         self.assertIn('href="../../docs#bom"', overview)
         self.assertIn('href="../../docs#uno-q-wiring"', overview)
 
+        with urlopen(self.base + "/web/pages/experiment.html", timeout=2) as response:
+            experiment = response.read().decode("utf-8")
+        self.assertIn("固定60点", experiment)
+        self.assertIn("中心12点", experiment)
+        self.assertIn("四隅48点", experiment)
+
     def test_original_simulation_asset_is_served(self):
         path = "/web/assets/simulation/5mm-400x300/calculix/model-metadata.json"
         with urlopen(self.base + path, timeout=2) as response:

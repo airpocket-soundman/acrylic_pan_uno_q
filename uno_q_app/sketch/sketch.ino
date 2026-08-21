@@ -6,6 +6,8 @@
 #include "kx134.h"
 
 constexpr uint8_t KX134_CS_PIN = 10;
+constexpr uint8_t KX134_INT1_PIN = 2;
+constexpr uint8_t KX134_INT2_PIN = 3;
 constexpr uint32_t SAMPLE_PERIOD_US = 1000000UL / APAN_SAMPLE_RATE_HZ;
 constexpr uint32_t SAMPLE_PERIOD_REMAINDER = 1000000UL % APAN_SAMPLE_RATE_HZ;
 constexpr size_t BRIDGE_CHUNK_SAMPLES = 64;
@@ -42,6 +44,11 @@ void setup() {
   Monitor.begin(115200);
   Bridge.begin();
   Bridge.provide("set_thresholds", setThresholds);
+
+  // Reserved for a later DRDY/FIFO implementation. The original sensor
+  // connector routes INT1 to D2 and INT2 to D3 on the UNO Q adapter.
+  pinMode(KX134_INT1_PIN, INPUT_PULLUP);
+  pinMode(KX134_INT2_PIN, INPUT_PULLUP);
 
   sensorReady = sensor.begin();
   if (!sensorReady) {

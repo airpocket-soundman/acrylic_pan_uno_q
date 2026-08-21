@@ -47,16 +47,23 @@ STM32U585は決定論的な取得だけに集中させる。BridgeやLinuxの遅
 - App LabのRun at startupを有効化
 - 必要に応じてBridge転送を特徴量だけに縮小
 
-## 4. 実機で決める項目
+## 4. 確定したセンサー配線
 
-- KX134のnCSピン（初期値D10）と必要ならDRDYピン
+- SPI2: D13=SCK、D12=CIPO/MISO、D11=COPI/MOSI、D10=CS
+- 割り込み予約: D2=INT1、D3=INT2
+- 電源: CN1-5/8を3.3 V、CN1-2/4/11/13をGND
+- I2C用CN1-1/3は未接続
+- 詳細: [`uno-q-sensor-wiring.md`](uno-q-sensor-wiring.md)
+
+## 5. 実機で決める項目
+
 - SPIクロックと信号品質
 - `micros()`方式のジッタ許容可否
 - 打撃しきい値（初期値: jerk 120、level 80 raw counts）
 - Bridgeの連続通知で安全な最大チャンク長
 - QRB2210側モデル形式と音声バックエンド
 
-## 5. 旧ファームの扱い
+## 6. 旧ファームの扱い
 
 `firmware/AcrylicPanCollector` と `firmware/variants` は移植の比較元として保持する。
 UNO Q版がデータ収録・推論・UIまで置換できた時点で、`firmware/legacy_ml63q2557/`

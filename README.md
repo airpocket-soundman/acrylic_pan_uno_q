@@ -31,7 +31,7 @@ UNO Q App Lab用の最初の実装は次を含みます。
 - Bridgeの分割メッセージによるLinux側への波形転送
 - Linux側でのJSONL保存
 
-## 配線（初期設定）
+## 配線（確定）
 
 | KX134-1211 | UNO Q |
 | --- | --- |
@@ -42,8 +42,10 @@ UNO Q App Lab用の最初の実装は次を含みます。
 | SDO | CIPO/MISO |
 | nCS | D10 |
 
-KX134-1211は3.3 Vで使用します。`uno_q_app/sketch/sketch.ino` の
-`KX134_CS_PIN` を変更すれば別のCSピンも使用できます。
+旧評価キットの14ピンIDCコネクタは、D10-D13のSPI、D2/D3の割り込み予約、
+3.3 VおよびGNDへ展開します。KX134-1211は3.3 Vで使用し、UNO QのJSPIにある
+5 V端子へは接続しません。全14ピンの配置、CN1の向き、変換アダプタ仕様は
+[`docs/uno-q-sensor-wiring.md`](docs/uno-q-sensor-wiring.md) を参照してください。
 
 ## 起動
 

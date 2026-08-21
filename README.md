@@ -17,6 +17,18 @@ multi-task推論で精度向上を狙います。詳しくは [開発方針](doc
 収録基盤、モデル枠組み、評価手順を進めます。[学習データ方針](docs/data-strategy.md) に
 移行、追加収録、分割、版管理の規則を記録しています。
 
+## センサなしUNO Q実機確認
+
+KX134を接続する前は、既存ダミーモデルを使ってSTM32 → Bridge → Linux推論を確認できます。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/deploy-uno-q-dummy.ps1
+```
+
+STM32がcase 0〜7を通知し、QRB2210が128-32-8モデルを推論して
+`data/inference/dummy_results.jsonl`へ保存します。手順と実機結果は
+[UNO Qセンサなしダミー推論Bring-up](docs/uno-q-dummy-bringup.md) を参照してください。
+
 ## UNO Qでの構成
 
 ```text
@@ -32,7 +44,8 @@ KX134-1211 --SPI--> STM32U585 (Zephyr/Arduino sketch)
                     ブラウザ / 音声出力
 ```
 
-UNO Q App Lab用の最初の実装は次を含みます。
+UNO Q App Lab実装は、現在 `APAN_DUMMY_MODE=1` でセンサアクセスを無効化しています。
+ダミー経路の確認後に有効化する実センサ側コードは次を含みます。
 
 - KX134-1211のSPI初期化とWHO_AM_I検査
 - Z軸を25.6 kHz相当で読み取るMCU側サンプラ

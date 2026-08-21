@@ -1,5 +1,5 @@
 name: Acrylic Pan UNO Q
 icon: "🥁"
-description: Capture KX134 vibration events for the Acrylic Pan on Arduino UNO Q
+description: Run the Acrylic Pan dummy model on Arduino UNO Q without a sensor
 
 bricks: []

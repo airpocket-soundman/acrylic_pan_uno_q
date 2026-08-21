@@ -78,6 +78,11 @@ class UnoQWebTests(unittest.TestCase):
         self.assertIn("D10 / SS / PB9", wiring)
         self.assertIn("5 Vへ接続しない", wiring)
 
+        with urlopen(self.base + "/web/pages/overview.html", timeout=2) as response:
+            overview = response.read().decode("utf-8")
+        self.assertIn('href="../../docs#bom"', overview)
+        self.assertIn('href="../../docs#uno-q-wiring"', overview)
+
     def test_original_simulation_asset_is_served(self):
         path = "/web/assets/simulation/5mm-400x300/calculix/model-metadata.json"
         with urlopen(self.base + path, timeout=2) as response:

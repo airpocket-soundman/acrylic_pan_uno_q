@@ -18,3 +18,5 @@ web/assets/simulation/calculix-highfreq/spooles.out
 
 # Local Solist-AI vendor software and documentation.
 solist-ai/
+uno_q_app/.cache/
+uno_q_app/data/captures/

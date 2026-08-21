@@ -1,0 +1,65 @@
+from __future__ import annotations
+
+import json
+import threading
+import time
+from pathlib import Path
+
+from arduino.app_utils import App, Bridge, Logger
+
+
+EVENT_SAMPLES = 512
+SAMPLE_RATE_HZ = 25_600
+CAPTURE_PATH = Path("data/captures/events.jsonl")
+
+logger = Logger("acrylic-pan")
+lock = threading.Lock()
+pending: dict[int, dict] = {}
+
+
+def on_sensor_status(ready: bool, who_am_i: int) -> None:
+    if ready:
+        logger.info(f"KX134 ready (WHO_AM_I=0x{who_am_i:02X})")
+    else:
+        logger.error(f"KX134 not found (WHO_AM_I=0x{who_am_i:02X})")
+
+
+def on_capture_chunk(
+    sequence: int,
+    offset: int,
+    samples: list[int],
+    trigger_index: int,
+    peak_abs: int,
+) -> None:
+    with lock:
+        event = pending.setdefault(
+            sequence,
+            {
+                "sequence": sequence,
+                "sample_rate_hz": SAMPLE_RATE_HZ,
+                "trigger_index": trigger_index,
+                "peak_abs": peak_abs,
+                "samples": [None] * EVENT_SAMPLES,
+            },
+        )
+        end = min(offset + len(samples), EVENT_SAMPLES)
+        event["samples"][offset:end] = samples[: end - offset]
+
+        if any(value is None for value in event["samples"]):
+            return
+
+        event["captured_at_unix_ns"] = time.time_ns()
+        CAPTURE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CAPTURE_PATH.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(event, ensure_ascii=False, separators=(",", ":")) + "\n")
+        pending.pop(sequence, None)
+        logger.info(
+            f"Saved event {sequence}: {EVENT_SAMPLES} samples, peak={peak_abs}, "
+            f"path={CAPTURE_PATH}"
+        )
+
+
+Bridge.provide("on_sensor_status", on_sensor_status)
+Bridge.provide("on_capture_chunk", on_capture_chunk)
+
+App.run()

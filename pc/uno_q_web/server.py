@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import shutil
 import subprocess
@@ -12,12 +13,13 @@ from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Protocol
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 
 APP_CONTAINER = "acrylic-pan-dummy-main-1"
 RESULT_PATH = "data/inference/dummy_results.jsonl"
 STATIC_ROOT = Path(__file__).with_name("static")
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PANEL = {
     "id": "400x300x5",
     "width_mm": 400,
@@ -189,12 +191,53 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_file(self, target: Path) -> None:
+        if not target.is_file():
+            self.send_error(404)
+            return
+        body = target.read_bytes()
+        content_type = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+        if target.suffix.lower() in {".html", ".css", ".js", ".md", ".svg", ".json"}:
+            content_type += "; charset=utf-8"
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _repo_file(self, path: str) -> bool:
+        if path == "/docs":
+            self._send_file(REPO_ROOT / "index.html")
+            return True
+        if path == "/docs/":
+            self.send_response(302)
+            self.send_header("Location", "/docs")
+            self.end_headers()
+            return True
+
+        roots = {"web": REPO_ROOT / "web", "docs": REPO_ROOT / "docs"}
+        parts = unquote(path).lstrip("/").split("/", 1)
+        if len(parts) != 2 or parts[0] not in roots:
+            return False
+        root = roots[parts[0]].resolve()
+        target = (root / parts[1]).resolve()
+        try:
+            target.relative_to(root)
+        except ValueError:
+            self.send_error(404)
+            return True
+        self._send_file(target)
+        return True
+
     def do_GET(self) -> None:
         path = urlparse(self.path).path
         if path == "/api/status":
             self._json(self.source.snapshot())
         elif path == "/api/health":
             self._json({"ok": True})
+        elif self._repo_file(path):
+            return
         else:
             self._static(path)
 

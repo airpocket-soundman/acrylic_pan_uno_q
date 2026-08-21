@@ -43,6 +43,10 @@ powershell -ExecutionPolicy Bypass -File scripts/run-uno-q-web.ps1
 12領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を1秒ごとに更新します。
 Web UIはPC上で動作し、UNO Q側へ追加パッケージを導入しません。
 
+同じサーバーの `http://127.0.0.1:8765/docs`、またはダッシュボード右上の「設計資料」から
+ドキュメントポータルを開けます。元リポジトリから継承した2D板、3Dソリッド、CalculiXの
+シミュレーション結果に加え、現行BOMとKX134–UNO Qの全14ピン配線を表示します。
+
 ## UNO Qでの構成
 
 ```text

@@ -59,6 +59,30 @@ class UnoQWebTests(unittest.TestCase):
             html = response.read().decode("utf-8")
         self.assertIn("UNO Q Live Console", html)
         self.assertIn("4 × 3", html)
+        self.assertIn('href="/docs"', html)
+
+    def test_documentation_portal(self):
+        with urlopen(self.base + "/docs", timeout=2) as response:
+            html = response.read().decode("utf-8")
+        self.assertIn("ARDUINO UNO Q PROJECT", html)
+        self.assertIn('data-page="bom"', html)
+        self.assertIn('data-page="uno-q-wiring"', html)
+        self.assertIn('data-page="simulation-calculix-5mm"', html)
+
+        with urlopen(self.base + "/web/pages/bom.html", timeout=2) as response:
+            bom = response.read().decode("utf-8")
+        self.assertIn("61201421721", bom)
+
+        with urlopen(self.base + "/web/pages/uno-q-wiring.html", timeout=2) as response:
+            wiring = response.read().decode("utf-8")
+        self.assertIn("D10 / SS / PB9", wiring)
+        self.assertIn("5 Vへ接続しない", wiring)
+
+    def test_original_simulation_asset_is_served(self):
+        path = "/web/assets/simulation/5mm-400x300/calculix/model-metadata.json"
+        with urlopen(self.base + path, timeout=2) as response:
+            metadata = json.load(response)
+        self.assertIsInstance(metadata, dict)
 
 
 if __name__ == "__main__":

@@ -15,12 +15,15 @@ SPEC.loader.exec_module(MODULE)
 
 class UnoQDummyModelTests(unittest.TestCase):
     def test_all_golden_cases_classify_correctly(self):
-        model = MODULE.DummyElmModel.load(ROOT / "data" / "dummy_model" / "model.npz")
-        cases = MODULE.load_golden_cases(ROOT / "data" / "dummy_model" / "golden_outputs.json")
+        model = MODULE.DummyElmModel.load(ROOT / "data" / "dummy_model_12class" / "model.npz")
+        cases = MODULE.load_golden_cases(
+            ROOT / "data" / "dummy_model_12class" / "golden_outputs.json",
+            expected_count=12,
+        )
         for case in cases:
             predicted, scores = model.predict(case["input"])
             self.assertEqual(predicted, case["expected_class"])
-            self.assertEqual(len(scores), 8)
+            self.assertEqual(len(scores), 12)
 
 
 if __name__ == "__main__":

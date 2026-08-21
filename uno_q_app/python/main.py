@@ -21,7 +21,7 @@ logger = Logger("acrylic-pan")
 lock = threading.Lock()
 pending: dict[int, dict] = {}
 model = DummyElmModel.load(MODEL_PATH)
-golden_cases = load_golden_cases(GOLDEN_PATH)
+golden_cases = load_golden_cases(GOLDEN_PATH, model.output_count)
 
 
 def on_runtime_status(mode: str, sensor_ready: bool) -> None:
@@ -49,7 +49,7 @@ def on_dummy_case(case_id: int) -> None:
         "scores": scores,
         "inference_us": elapsed_us,
         "created_at_unix_ns": time.time_ns(),
-        "model": "apan_dummy_128x32x8",
+        "model": "acrylic_pan_time128_h32_12class_v1",
         "source": "dummy_golden_case",
     }
     INFERENCE_PATH.parent.mkdir(parents=True, exist_ok=True)

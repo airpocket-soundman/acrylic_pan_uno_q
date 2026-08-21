@@ -7,8 +7,8 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appSource = Join-Path $repoRoot "uno_q_app"
-$modelSource = Join-Path $repoRoot "data\dummy_model\model.npz"
-$goldenSource = Join-Path $repoRoot "data\dummy_model\golden_outputs.json"
+$modelSource = Join-Path $repoRoot "data\dummy_model_12class\model.npz"
+$goldenSource = Join-Path $repoRoot "data\dummy_model_12class\golden_outputs.json"
 
 $adb = (Get-Command adb.exe -ErrorAction SilentlyContinue).Source
 if (-not $adb) {

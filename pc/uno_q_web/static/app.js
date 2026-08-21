@@ -1,5 +1,5 @@
 const $ = id => document.getElementById(id);
-const classNames = ['AREA 1','AREA 2','AREA 3','AREA 4','AREA 5','AREA 6','AREA 7','AREA 8'];
+const classNames = Array.from({length:12}, (_, index) => `AREA ${index + 1}`);
 let timer = null;
 let lastTimestamp = null;
 
@@ -8,7 +8,7 @@ function escapeHtml(value) {
 }
 
 function normalized(scores) {
-  if (!scores || !scores.length) return Array(8).fill(0);
+  if (!scores || !scores.length) return Array(classNames.length).fill(0);
   const max = Math.max(...scores);
   const values = scores.map(value => Math.exp((value - max) * 3));
   const total = values.reduce((sum, value) => sum + value, 0) || 1;
@@ -32,7 +32,7 @@ function drawPanel(latest) {
 }
 
 function drawScores(latest) {
-  const scores = latest && latest.scores ? latest.scores : Array(8).fill(0);
+  const scores = latest && latest.scores ? latest.scores : Array(classNames.length).fill(0);
   const min = Math.min(0, ...scores), max = Math.max(1, ...scores), range = max - min || 1;
   $('scores').innerHTML = scores.map((value, index) => {
     const width = Math.max(1, (value - min) / range * 100);
@@ -87,7 +87,7 @@ async function refresh() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     render(await response.json());
   } catch (error) {
-    render({connected:false,app_running:false,device:null,sample_count:0,pass_count:0,accuracy:null,latency_us:{latest:null,average:null},latest:null,history:[],model:'apan_dummy_128x32x8',error:error.message});
+    render({connected:false,app_running:false,device:null,sample_count:0,pass_count:0,accuracy:null,latency_us:{latest:null,average:null},latest:null,history:[],model:'acrylic_pan_time128_h32_12class_v1',error:error.message});
   }
 }
 

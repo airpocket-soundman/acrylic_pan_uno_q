@@ -19,7 +19,7 @@ void loop() {
   const uint32_t now = millis();
   if (static_cast<int32_t>(now - nextDummyCaseAt) >= 0) {
     Bridge.notify("on_dummy_case", static_cast<int>(dummyCase));
-    dummyCase = (dummyCase + 1U) % 8U;
+    dummyCase = (dummyCase + 1U) % 12U;
     nextDummyCaseAt = now + DUMMY_CASE_INTERVAL_MS;
   }
   delay(1);

@@ -1,8 +1,9 @@
 # Acrylic Pan for Arduino UNO Q
 
-400 x 200 x 2 mm のアクリルパネルを打楽器兼タッチインターフェースにする
+400 x 300 x 5 mm のアクリルパネルを打楽器兼タッチインターフェースにする
 Arduino UNO Q 向けプロジェクトです。KX134-1211 加速度センサの振動波形から
-4 x 2領域（8クラス）の打撃位置を推定し、音階とヒートマップへ変換します。
+4 x 3領域（12クラス）の打撃位置を推定し、音階とヒートマップへ変換します。
+旧400 x 200 x 3 mm・4 x 2構成は比較用パネルプロファイルとして保持します。
 
 このリポジトリは旧 `acrylic_pan` から履歴を引き継いだ移植プロジェクトです。
 旧 ML63Q2557 / LEXIDE ファームは比較資料として `firmware/` に残し、新しい実装は
@@ -19,13 +20,14 @@ multi-task推論で精度向上を狙います。詳しくは [開発方針](doc
 
 ## センサなしUNO Q実機確認
 
-KX134を接続する前は、既存ダミーモデルを使ってSTM32 → Bridge → Linux推論を確認できます。
+KX134を接続する前は、元リポジトリの12クラスモデルと代表入力を使って
+STM32 → Bridge → Linux推論を確認できます。
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/deploy-uno-q-dummy.ps1
 ```
 
-STM32がcase 0〜7を通知し、QRB2210が128-32-8モデルを推論して
+STM32がcase 0〜11を通知し、QRB2210が128-32-12モデルを推論して
 `data/inference/dummy_results.jsonl`へ保存します。手順と実機結果は
 [UNO Qセンサなしダミー推論Bring-up](docs/uno-q-dummy-bringup.md) を参照してください。
 
@@ -38,7 +40,7 @@ powershell -ExecutionPolicy Bypass -File scripts/run-uno-q-web.ps1
 ```
 
 ブラウザで `http://127.0.0.1:8765/` が開き、ADB経由で取得した直近の推論結果を表示します。
-8領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を2秒ごとに更新します。
+12領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を1秒ごとに更新します。
 Web UIはPC上で動作し、UNO Q側へ追加パッケージを導入しません。
 
 ## UNO Qでの構成

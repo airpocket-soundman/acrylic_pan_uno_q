@@ -18,6 +18,16 @@ from urllib.parse import urlparse
 APP_CONTAINER = "acrylic-pan-dummy-main-1"
 RESULT_PATH = "data/inference/dummy_results.jsonl"
 STATIC_ROOT = Path(__file__).with_name("static")
+PANEL = {
+    "id": "400x300x5",
+    "width_mm": 400,
+    "height_mm": 300,
+    "thickness_mm": 5,
+    "columns": 4,
+    "rows": 3,
+    "class_count": 12,
+}
+MODEL_NAME = "acrylic_pan_time128_h32_12class_v1"
 
 
 class SnapshotSource(Protocol):
@@ -89,7 +99,11 @@ class AdbSnapshotSource:
                 item = json.loads(line)
             except json.JSONDecodeError:
                 continue
-            if isinstance(item, dict) and "predicted_class" in item:
+            if (
+                isinstance(item, dict)
+                and "predicted_class" in item
+                and item.get("model") == MODEL_NAME
+            ):
                 results.append(item)
         return results
 
@@ -107,7 +121,8 @@ class AdbSnapshotSource:
                 "device_detail": detail,
                 "mode": "dummy",
                 "sensor_connected": False,
-                "model": latest.get("model", "apan_dummy_128x32x8") if latest else "apan_dummy_128x32x8",
+                "model": latest.get("model", MODEL_NAME) if latest else MODEL_NAME,
+                "panel": PANEL,
                 "latest": latest,
                 "history": results[-32:],
                 "sample_count": len(results),
@@ -127,7 +142,8 @@ class AdbSnapshotSource:
                 "device": None,
                 "mode": "dummy",
                 "sensor_connected": False,
-                "model": "apan_dummy_128x32x8",
+                "model": MODEL_NAME,
+                "panel": PANEL,
                 "latest": None,
                 "history": [],
                 "sample_count": 0,

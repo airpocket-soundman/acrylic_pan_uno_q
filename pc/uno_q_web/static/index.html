@@ -15,7 +15,7 @@
 
     <section class="hero card">
       <div><span class="eyebrow">REAL-TIME INFERENCE</span><h2>振動から、打点へ。</h2><p id="heroText">UNO Qの推論ストリームを読み込んでいます。</p></div>
-      <div class="mode"><span>DUMMY MODEL</span><b>128—32—8</b><small>センサ入力は現在無効</small></div>
+      <div class="mode"><span>12-CLASS MODEL</span><b>128—32—12</b><small>代表入力・センサ入力は現在無効</small></div>
     </section>
 
     <section class="metrics" aria-label="稼働指標">
@@ -27,8 +27,8 @@
 
     <section class="workspace">
       <article class="card panel-card">
-        <div class="section-title"><div><span class="eyebrow">POSITION MAP</span><h2>4 × 2 打点マップ</h2></div><span id="resultBadge" class="result neutral">WAITING</span></div>
-        <div id="panel" class="panel" aria-label="8領域推論マップ"></div>
+        <div class="section-title"><div><span class="eyebrow">POSITION MAP</span><h2>4 × 3 打点マップ</h2></div><span id="resultBadge" class="result neutral">WAITING</span></div>
+        <div id="panel" class="panel" aria-label="12領域推論マップ"></div>
         <div class="panel-legend"><span><i class="sensor-dot"></i>センサ想定位置</span><span>色の強さ = 正規化スコア</span></div>
       </article>
 
@@ -44,7 +44,7 @@
     </section>
 
     <div id="error" class="error" role="alert" hidden></div>
-    <footer><span id="modelLabel">apan_dummy_128x32x8</span><span>USB → ADB → UNO Q Linux container</span><span>センサ未接続モード</span></footer>
+    <footer><span id="modelLabel">acrylic_pan_time128_h32_12class_v1</span><span>USB → ADB → UNO Q Linux container</span><span>センサ未接続モード</span></footer>
   </main>
   <script src="/app.js"></script>
 </body>

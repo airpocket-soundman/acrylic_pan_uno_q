@@ -12,7 +12,6 @@ from pathlib import Path
 
 INPUT_COUNT = 128
 HIDDEN_COUNT = 32
-OUTPUT_COUNT = 8
 
 
 def _read_npy_float32(payload: bytes) -> tuple[tuple[int, ...], tuple[float, ...]]:
@@ -52,6 +51,7 @@ def _read_npy_float32(payload: bytes) -> tuple[tuple[int, ...], tuple[float, ...
 class DummyElmModel:
     alpha: tuple[float, ...]
     beta: tuple[float, ...]
+    output_count: int
 
     @classmethod
     def load(cls, path: Path) -> "DummyElmModel":
@@ -60,9 +60,9 @@ class DummyElmModel:
             beta_shape, beta = _read_npy_float32(archive.read("beta.npy"))
         if alpha_shape != (INPUT_COUNT, HIDDEN_COUNT):
             raise ValueError(f"unexpected alpha shape: {alpha_shape}")
-        if beta_shape != (HIDDEN_COUNT, OUTPUT_COUNT):
+        if len(beta_shape) != 2 or beta_shape[0] != HIDDEN_COUNT or beta_shape[1] < 2:
             raise ValueError(f"unexpected beta shape: {beta_shape}")
-        return cls(alpha=alpha, beta=beta)
+        return cls(alpha=alpha, beta=beta, output_count=beta_shape[1])
 
     def predict(self, features: list[float]) -> tuple[int, list[float]]:
         if len(features) != INPUT_COUNT:
@@ -75,18 +75,18 @@ class DummyElmModel:
             hidden.append(min(1.0, max(0.0, value)))
 
         scores = []
-        for output in range(OUTPUT_COUNT):
+        for output in range(self.output_count):
             score = 0.0
             for row, value in enumerate(hidden):
-                score += value * self.beta[row * OUTPUT_COUNT + output]
+                score += value * self.beta[row * self.output_count + output]
             scores.append(score)
-        predicted = max(range(OUTPUT_COUNT), key=scores.__getitem__)
+        predicted = max(range(self.output_count), key=scores.__getitem__)
         return predicted, scores
 
 
-def load_golden_cases(path: Path) -> list[dict]:
+def load_golden_cases(path: Path, expected_count: int | None = None) -> list[dict]:
     document = json.loads(path.read_text(encoding="utf-8"))
     cases = document["cases"]
-    if len(cases) != OUTPUT_COUNT:
-        raise ValueError(f"expected {OUTPUT_COUNT} golden cases")
+    if expected_count is not None and len(cases) != expected_count:
+        raise ValueError(f"expected {expected_count} golden cases")
     return cases

@@ -29,6 +29,18 @@ STM32がcase 0〜7を通知し、QRB2210が128-32-8モデルを推論して
 `data/inference/dummy_results.jsonl`へ保存します。手順と実機結果は
 [UNO Qセンサなしダミー推論Bring-up](docs/uno-q-dummy-bringup.md) を参照してください。
 
+### PC Web UI
+
+UNO QをUSB接続し、ダミーAppを起動した状態で次を実行します。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-uno-q-web.ps1
+```
+
+ブラウザで `http://127.0.0.1:8765/` が開き、ADB経由で取得した直近の推論結果を表示します。
+8領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を2秒ごとに更新します。
+Web UIはPC上で動作し、UNO Q側へ追加パッケージを導入しません。
+
 ## UNO Qでの構成
 
 ```text
@@ -84,6 +96,9 @@ UNO Q App Lab実装は、現在 `APAN_DUMMY_MODE=1` でセンサアクセスを�
 
 `pc/`、`sim/`、`calculix/`、`web/`、`tests/` は旧プロジェクトから継承しており、
 データ形式と解析の移行が完了するまでそのまま利用できます。Pythonテストは次で実行します。
+
+UNO Q実機向けのPC Web UIは `pc/uno_q_web/` にあります。旧UIを直接流用せず、
+UNO QのADB接続と現在のJSONL結果形式に合わせた標準ライブラリのみの実装です。
 
 ```powershell
 python -m pytest

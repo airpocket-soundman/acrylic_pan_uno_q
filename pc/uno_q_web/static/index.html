@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Acrylic Pan · UNO Q Live</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header class="topbar">
+      <div class="identity"><div class="mark"><i></i><i></i><i></i><i></i></div><div><p>ACRYLIC PAN</p><h1>UNO Q Live Console</h1></div></div>
+      <div class="connection"><span id="pulse"></span><div><b id="connectionLabel">接続確認中</b><small id="deviceLabel">USB / ADB</small></div></div>
+    </header>
+
+    <section class="hero card">
+      <div><span class="eyebrow">REAL-TIME INFERENCE</span><h2>振動から、打点へ。</h2><p id="heroText">UNO Qの推論ストリームを読み込んでいます。</p></div>
+      <div class="mode"><span>DUMMY MODEL</span><b>128—32—8</b><small>センサ入力は現在無効</small></div>
+    </section>
+
+    <section class="metrics" aria-label="稼働指標">
+      <article class="metric card"><span>判定数</span><b id="sampleCount">—</b><small>直近ADB取得範囲</small></article>
+      <article class="metric card"><span>一致率</span><b id="accuracy">—</b><small id="passCount">golden比較</small></article>
+      <article class="metric card"><span>最新推論</span><b id="latency">—</b><small id="latencyAverage">平均 —</small></article>
+      <article class="metric card"><span>最新クラス</span><b id="latestClass">—</b><small id="latestExpected">期待値 —</small></article>
+    </section>
+
+    <section class="workspace">
+      <article class="card panel-card">
+        <div class="section-title"><div><span class="eyebrow">POSITION MAP</span><h2>4 × 2 打点マップ</h2></div><span id="resultBadge" class="result neutral">WAITING</span></div>
+        <div id="panel" class="panel" aria-label="8領域推論マップ"></div>
+        <div class="panel-legend"><span><i class="sensor-dot"></i>センサ想定位置</span><span>色の強さ = 正規化スコア</span></div>
+      </article>
+
+      <article class="card scores-card">
+        <div class="section-title"><div><span class="eyebrow">CLASS SCORES</span><h2>推論スコア</h2></div><span id="updatedAt">—</span></div>
+        <div id="scores" class="scores"></div>
+      </article>
+    </section>
+
+    <section class="card history-card">
+      <div class="section-title"><div><span class="eyebrow">INFERENCE STREAM</span><h2>直近の判定履歴</h2></div><div class="actions"><label><input id="autoRefresh" type="checkbox" checked> 自動更新</label><button id="refreshButton" type="button">今すぐ更新</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>CASE</th><th>EXPECTED</th><th>PREDICTED</th><th>RESULT</th><th>LATENCY</th><th>TIME</th></tr></thead><tbody id="history"></tbody></table></div>
+    </section>
+
+    <div id="error" class="error" role="alert" hidden></div>
+    <footer><span id="modelLabel">apan_dummy_128x32x8</span><span>USB → ADB → UNO Q Linux container</span><span>センサ未接続モード</span></footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

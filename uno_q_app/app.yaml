@@ -1,5 +1,7 @@
-name: Acrylic Pan UNO Q
+name: Acrylic Pan XY Instrument
 icon: "🥁"
-description: Run the Acrylic Pan dummy model on Arduino UNO Q without a sensor
+description: Run coordinate inference and the Acrylic Pan instrument UI on UNO Q
 
 bricks: []
+ports:
+  - 8765

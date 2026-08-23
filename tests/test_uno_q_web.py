@@ -80,8 +80,8 @@ class UnoQWebTests(unittest.TestCase):
 
         with urlopen(self.base + "/web/pages/overview.html", timeout=2) as response:
             overview = response.read().decode("utf-8")
-        self.assertIn('href="../../docs#bom"', overview)
-        self.assertIn('href="../../docs#uno-q-wiring"', overview)
+        self.assertIn('href="../../index.html#bom"', overview)
+        self.assertIn('href="../../index.html#uno-q-wiring"', overview)
 
         with urlopen(self.base + "/web/pages/experiment.html", timeout=2) as response:
             experiment = response.read().decode("utf-8")

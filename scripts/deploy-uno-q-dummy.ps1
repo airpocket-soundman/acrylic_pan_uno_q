@@ -7,10 +7,13 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appSource = Join-Path $repoRoot "uno_q_app"
-$modelSource = Join-Path $repoRoot "data\dummy_model_12class\model.npz"
-$goldenSource = Join-Path $repoRoot "data\dummy_model_12class\golden_outputs.json"
+$positionModelRoot = Join-Path $repoRoot "data\position_model_400x300"
 
 $adb = (Get-Command adb.exe -ErrorAction SilentlyContinue).Source
+if (-not $adb) {
+    $localPlatformTools = Join-Path $env:USERPROFILE "platform-tools\adb.exe"
+    if (Test-Path -LiteralPath $localPlatformTools) { $adb = $localPlatformTools }
+}
 if (-not $adb) {
     $wingetRoot = Join-Path $env:LOCALAPPDATA "Microsoft\WinGet\Packages"
     $adb = Get-ChildItem -LiteralPath $wingetRoot -Recurse -Filter adb.exe -File -ErrorAction SilentlyContinue |
@@ -18,11 +21,16 @@ if (-not $adb) {
 }
 if (-not $adb) { throw "adb.exe not found. Install Google.PlatformTools first." }
 
-$staging = Join-Path ([System.IO.Path]::GetTempPath()) "acrylic-pan-uno-q-dummy"
+$tempRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
+$staging = [System.IO.Path]::GetFullPath((Join-Path $tempRoot "acrylic-pan-uno-q-dummy"))
+if (-not $staging.StartsWith($tempRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Unsafe staging path: $staging"
+}
 if (Test-Path -LiteralPath $staging) { Remove-Item -LiteralPath $staging -Recurse -Force }
 Copy-Item -LiteralPath $appSource -Destination $staging -Recurse
-Copy-Item -LiteralPath $modelSource -Destination (Join-Path $staging "python\model.npz")
-Copy-Item -LiteralPath $goldenSource -Destination (Join-Path $staging "python\golden_outputs.json")
+Copy-Item -LiteralPath (Join-Path $positionModelRoot "model.npz") -Destination (Join-Path $staging "python\position_model.npz")
+Copy-Item -LiteralPath (Join-Path $positionModelRoot "parity_cases.npz") -Destination (Join-Path $staging "python\position_parity.npz")
+Copy-Item -LiteralPath (Join-Path $positionModelRoot "model_metadata.json") -Destination (Join-Path $staging "python\position_metadata.json")
 
 $adbArgs = @()
 if ($Device) { $adbArgs += @("-s", $Device) }
@@ -47,5 +55,6 @@ if ($exists -eq "yes") {
 if ($LASTEXITCODE -ne 0) { throw "Failed to start the Arduino App." }
 
 if (-not $KeepStaging) { Remove-Item -LiteralPath $staging -Recurse -Force }
-Write-Host "Acrylic Pan dummy App deployed."
+Write-Host "Acrylic Pan XY Instrument App deployed."
+Write-Host "Web UI: http://192.168.50.160:8765/"
 Write-Host "Logs: adb shell env -u TMPDIR arduino-app-cli app logs /home/arduino/ArduinoApps/acrylic-pan-dummy"

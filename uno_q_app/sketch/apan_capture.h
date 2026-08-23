@@ -3,7 +3,8 @@
 #include <Arduino.h>
 
 constexpr size_t APAN_EVENT_SAMPLES = 512;
-constexpr size_t APAN_PRETRIGGER_SAMPLES = 128;
+// Match the deployed 12-class model's live inference contract.
+constexpr size_t APAN_PRETRIGGER_SAMPLES = 64;
 constexpr uint32_t APAN_SAMPLE_RATE_HZ = 25600;
 
 struct ApanEvent {

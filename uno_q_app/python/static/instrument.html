@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acrylic Pan — 楽器モード</title><link rel="stylesheet" href="app.css"></head>
+<body><header><div class="brand"><div class="brand-mark">♪</div><div><strong>ACRYLIC PAN</strong><small>UNO Q instrument</small></div></div><nav><a href="position.html">座標テスト</a><a class="active" href="instrument.html">楽器モード</a></nav></header>
+<main><div class="eyebrow">SPATIAL INSTRUMENT</div><h1>板全体を、12の音に。</h1><p class="lead">最新60座標モデルの最尤座標を100 mm角の4×3パッドへ割り当てます。最初に「音を有効化」を押してください。</p>
+<div class="statusbar"><span id="runtime" class="pill live">接続確認中</span><span id="sensor" class="pill warn">デモ入力</span><span id="last" class="pill">最新: —</span></div>
+<section class="card"><div class="controls"><button id="enable">音を有効化</button><label>音色<select id="wave"><option value="steel" selected>Steel Drum</option><option value="triangle">Triangle</option><option value="sine">Sine</option><option value="square">Square</option></select></label><label>音量<input id="volume" type="range" min="0" max="0.5" step="0.01" value="0.16"></label></div><div id="pads" class="pads"></div><div class="note">画面のパッドを押すと各中心座標の保存波形をUNO Qで推論して試聴します。実センサー復旧後は、KX134の打撃イベントが同じモデルを通って自動発音します。</div></section></main>
+<script src="instrument.js"></script></body></html>

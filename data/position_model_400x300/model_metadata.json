@@ -1,0 +1,92 @@
+{
+  "model": "acrylic_pan_position_400x300x5_grid_v7_portable",
+  "source_model": "D:\\GitHub\\acrylic_pan\\artifacts\\pc_position_runtime_400x300x5\\position_ensemble.joblib",
+  "source_sha256": "3f3a4923949ba4815c24f230d626cf2405cbc0e6a0e94de5b8a6854d3acc2326",
+  "source_experiment": "pc_position_400x300x5_grid_v7",
+  "contract": {
+    "panel_profile_id": "400x300x5",
+    "sample_rate_hz": 25600,
+    "sample_count": 512,
+    "trigger_index": 64,
+    "feature_mode": "pc_rich_20ms_v1",
+    "panel_width_mm": 400.0,
+    "panel_height_mm": 300.0
+  },
+  "architecture": [
+    714,
+    384,
+    192,
+    96,
+    2
+  ],
+  "sample_count": 7132,
+  "unique_coordinates": 60,
+  "validation": {
+    "training_grid_sessions": [
+      "20260823_081435_223491a5",
+      "20260823_082825_9374f169",
+      "20260823_083716_e0336d95",
+      "20260823_084554_6d26bd22",
+      "20260823_102330_ae4338bd",
+      "20260823_103846_18384ce0",
+      "20260823_104754_2553f5d8"
+    ],
+    "train_count": 6174,
+    "iterations": 207,
+    "mae_x_mm": 5.464896814808219,
+    "mae_y_mm": 4.0525394328140765,
+    "rmse_x_mm": 12.704370829889672,
+    "rmse_y_mm": 7.719709864391556,
+    "mean_distance_mm": 7.481184719407012,
+    "median_distance_mm": 4.944516087450705,
+    "p90_distance_mm": 13.282605163644185,
+    "within_25mm": 0.9697286012526096,
+    "within_50mm": 0.988517745302714
+  },
+  "density_validation": {
+    "held_out_repetition_rule": "repetition_modulo_5_equals_0",
+    "test_count": 1426,
+    "balanced_train_count": 9600,
+    "support_cell_count": 60,
+    "temperature": 1.3898263163295483,
+    "iterations": 31,
+    "nll": 0.06822723895311356,
+    "brier_score": 0.017670101209154854,
+    "top1_cell_accuracy": 0.9887798036465638,
+    "expected_mean_distance_mm": 1.8099966491777661,
+    "expected_median_distance_mm": 0.10554849557272733,
+    "map_mean_distance_mm": 1.1250583748141514,
+    "probability_mass_within_25mm": 0.9790074825286865,
+    "probability_mass_within_50mm": 0.9883350133895874,
+    "mean_credible_90_cell_count": 1.1269284712482468,
+    "expected_calibration_error": 0.008037633849059764,
+    "per_position_group": {
+      "centre_12": {
+        "nll": 0.030947033315896988,
+        "brier_score": 0.015081107778189388,
+        "top1_cell_accuracy": 0.9914529914529915,
+        "expected_mean_distance_mm": 1.3642073159956538,
+        "expected_median_distance_mm": 0.10593944438317876,
+        "map_mean_distance_mm": 0.3021823851224562,
+        "probability_mass_within_25mm": 0.9798637628555298,
+        "probability_mass_within_50mm": 0.9938791990280151,
+        "mean_credible_90_cell_count": 1.0811965811965811,
+        "expected_calibration_error": 0.007804158788460905
+      },
+      "grid_48": {
+        "nll": 0.08643928915262222,
+        "brier_score": 0.01893487044265364,
+        "top1_cell_accuracy": 0.9874739039665971,
+        "expected_mean_distance_mm": 2.0277726491038908,
+        "expected_median_distance_mm": 0.10471000404675242,
+        "map_mean_distance_mm": 1.5270478979620776,
+        "probability_mass_within_25mm": 0.9785892963409424,
+        "probability_mass_within_50mm": 0.9856265187263489,
+        "mean_credible_90_cell_count": 1.149269311064718,
+        "expected_calibration_error": 0.008320379170097227
+      }
+    }
+  },
+  "scope": "400×300×5 mmの12中心＋四隅48点の計60座標について、各座標の条件付き確率を直接出力するPC専用確率マップモデルです。座標は60クラス分布の期待値として算出します。評価は全11セッションで反復番号が5の倍数のイベントを除外した共通holdoutです。四隅セッションをすべて学習へ使用したため、完全未学習の外部セッションは残っていません。",
+  "parity_case_count": 60
+}

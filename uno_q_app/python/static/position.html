@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acrylic Pan — 座標回帰</title><link rel="stylesheet" href="app.css"></head>
+<body>
+<header><div class="brand"><div class="brand-mark">◉</div><div><strong>ACRYLIC PAN</strong><small>UNO Q runtime</small></div></div><nav><a class="active" href="position.html">座標テスト</a><a href="instrument.html">楽器モード</a></nav></header>
+<main>
+  <div class="eyebrow">ON-DEVICE INFERENCE</div><h1>打点を、座標にする。</h1>
+  <p class="lead">512サンプルから714特徴量を生成し、今日作成した3モデルアンサンブルと60座標の条件付き確率モデルをUNO Q上で実行します。</p>
+  <div class="statusbar"><span id="runtime" class="pill live">UNO Q 接続確認中</span><span id="sensor" class="pill warn">センサー確認中</span><span class="pill">25.6 kHz / 512 samples</span><span class="pill">714—384—192—96</span><span class="pill">60 position cells</span></div>
+  <div class="grid">
+    <section class="card"><h2>条件付き座標確率 — 400 × 300 × 5 mm</h2><div id="board" class="board"><canvas id="heatmap" width="800" height="600"></canvas><div id="expectedMarker" class="expected-marker"></div><div id="marker" class="marker"></div></div><div class="heat-legend"><span>低</span><i class="heat-scale"></i><span>高</span><span>白緑 = 最尤座標</span><span>橙リング = 確率加重平均</span></div><div class="actions" id="cases"></div></section>
+    <aside class="card"><h2>最新の推論</h2><div class="readout"><div class="metric"><span>最尤座標</span><strong id="map">—</strong></div><div class="metric"><span>期待座標</span><strong id="expected">—</strong></div><div class="metric"><span>ゾーン</span><strong id="zone">—</strong></div><div class="metric"><span>最大確率</span><strong id="confidence">—</strong></div><div class="metric"><span>90%領域</span><strong id="credible">—</strong></div><div class="metric"><span>推論時間</span><strong id="latency">—</strong></div></div><div class="note">本日11:37作成の400×300モデルを移植しています。学習7,132波形・60座標、共通holdout平均距離7.48 mm。完全未学習の外部セッション評価は残っていません。</div></aside>
+  </div>
+  <section class="card" style="margin-top:18px"><h2>移植パリティ診断 — 12中心座標</h2><table class="self-test"><tbody id="selftest"><tr><td>実行中…</td><td></td></tr></tbody></table></section>
+</main>
+<script src="position.js"></script></body></html>

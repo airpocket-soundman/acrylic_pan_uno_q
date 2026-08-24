@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+  <rect width="1400" height="900" fill="#f7f9fc"/>
+  <style>
+    text{font-family:Arial,Helvetica,sans-serif;fill:#172033}.title{font-size:38px;font-weight:700}.sub{font-size:20px;fill:#526079}.box{fill:#fff;stroke:#2c5f9e;stroke-width:3}.head{font-size:27px;font-weight:700}.pin{font-size:20px}.warn{font-size:24px;font-weight:700;fill:#b32323}.wire{fill:none;stroke-width:5}.pwr{stroke:#df3b37}.gnd{stroke:#272b33}.sig{stroke:#18836b}.irq{stroke:#8b5fbf}.nc{stroke:#9ba4b0;stroke-dasharray:9 8}
+  </style>
+  <text x="700" y="58" text-anchor="middle" class="title">KX134 Sensor Board to Arduino UNO Q</text>
+  <text x="700" y="92" text-anchor="middle" class="sub">3.3 V SPI wiring through the original 2x7 keyed IDC cable</text>
+
+  <rect x="65" y="135" width="430" height="650" rx="18" class="box"/>
+  <text x="280" y="180" text-anchor="middle" class="head">KX134 board CN1</text>
+  <text x="280" y="212" text-anchor="middle" class="sub">front view, component side</text>
+
+  <rect x="905" y="135" width="430" height="650" rx="18" class="box"/>
+  <text x="1120" y="180" text-anchor="middle" class="head">Arduino UNO Q header</text>
+  <text x="1120" y="212" text-anchor="middle" class="sub">STM32U585 / 3.3 V domain</text>
+
+  <g class="pin">
+    <text x="105" y="270">CN1-5, 8  Power / I/O power</text>
+    <text x="105" y="335">CN1-2, 4, 11, 13  GND</text>
+    <text x="105" y="400">CN1-9  MOSI</text>
+    <text x="105" y="465">CN1-10  MISO</text>
+    <text x="105" y="530">CN1-12  SCK</text>
+    <text x="105" y="595">CN1-14  CS</text>
+    <text x="105" y="660">CN1-7 / 6  INT1 / INT2</text>
+    <text x="105" y="725">CN1-1 / 3  I2C SCL / SDA</text>
+
+    <text x="990" y="270">3.3 V</text>
+    <text x="990" y="335">GND</text>
+    <text x="990" y="400">D11 / COPI (PB15)</text>
+    <text x="990" y="465">D12 / CIPO (PB14)</text>
+    <text x="990" y="530">D13 / SCK (PB13)</text>
+    <text x="990" y="595">D10 / SS (PB9)</text>
+    <text x="990" y="660">D2 (PB3) / D3 (PB0)</text>
+    <text x="990" y="725">NC — leave open</text>
+  </g>
+
+  <path d="M495 263 H905" class="wire pwr"/>
+  <path d="M495 328 H905" class="wire gnd"/>
+  <path d="M495 393 H905" class="wire sig"/>
+  <path d="M495 458 H905" class="wire sig"/>
+  <path d="M495 523 H905" class="wire sig"/>
+  <path d="M495 588 H905" class="wire sig"/>
+  <path d="M495 653 H905" class="wire irq"/>
+  <path d="M495 718 H905" class="wire nc"/>
+
+  <rect x="200" y="815" width="1000" height="58" rx="12" fill="#fff0f0" stroke="#d74040" stroke-width="2"/>
+  <text x="700" y="853" text-anchor="middle" class="warn">3.3 V ONLY — never connect the KX134 power pins to 5 V</text>
+</svg>

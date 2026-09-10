@@ -76,6 +76,9 @@ class UnoQWebTests(unittest.TestCase):
         with urlopen(self.base + "/web/pages/uno-q-wiring.html", timeout=2) as response:
             wiring = response.read().decode("utf-8")
         self.assertIn("D10 / SS / PB9", wiring)
+        self.assertIn("MPU9250", wiring)
+        self.assertIn("D8 / PB4", wiring)
+        self.assertIn("WHO_AM_I = <code>0x71</code>", wiring)
         self.assertIn("5 Vへ接続しない", wiring)
 
         with urlopen(self.base + "/web/pages/overview.html", timeout=2) as response:

@@ -1,0 +1,6 @@
+name: BMI323 SPI Diagnostic
+icon: "🔎"
+description: Read-only BMI323 SPI identity check on UNO Q
+
+bricks: []
+ports: []

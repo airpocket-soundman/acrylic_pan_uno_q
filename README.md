@@ -1,7 +1,7 @@
 # Acrylic Pan for Arduino UNO Q
 
 400 x 300 x 5 mm のアクリルパネルを打楽器兼タッチインターフェースにする
-Arduino UNO Q 向けプロジェクトです。KX134-1211 加速度センサの振動波形から
+Arduino UNO Q 向けプロジェクトです。MPU9250 加速度センサの振動波形から
 4 x 3領域（12クラス）の打撃位置を推定し、音階とヒートマップへ変換します。
 旧400 x 200 x 3 mm・4 x 2構成は比較用パネルプロファイルとして保持します。
 
@@ -13,10 +13,32 @@ AIモデルは旧ML63Q2557のRAM、ノード数、bfloat16、1隠れ層ELMの制
 旧モデルをbaselineとして残しつつ、UNO Qの計算能力に合わせた3軸時系列モデルと
 multi-task推論で精度向上を狙います。詳しくは [開発方針](docs/development-policy.md) を参照してください。
 
-旧リポジトリに実測学習データはありませんが、元プロジェクトの開発PCに残る元データを
-初期学習データセットへ移行して利用します。現在の作業PCからは取得できないため、先に配線、
-収録基盤、モデル枠組み、評価手順を進めます。[学習データ方針](docs/data-strategy.md) に
-移行、追加収録、分割、版管理の規則を記録しています。
+元プロジェクトの実測7,132イベントをMPU9250相当へ変換し、12クラス、60クラス＋疑似XY、
+直接XYモデルを再学習して `uno_q_app` に搭載しています。UNO Q内で実センサデータの採取、
+再学習、推論、ヒートマップ・楽器画面の配信まで完結します。
+
+## 現行MPU9250 App
+
+```text
+MPU9250 (4 kHz / ±16 g) --SPI--> STM32U585
+                                  | 80点イベント検出
+                                  v
+                             Arduino Bridge
+                                  v
+                     QRB2210 / NumPyモデル・HTTP UI
+```
+
+UNO Qのポート8765から、推論結果 `/`、学習データ採取 `/collector.html`、位置推論
+`/position.html`、クラス演奏 `/instrument.html`、60点確率演奏
+`/instrument-probability.html` を配信します。実装・再学習手順は
+[`uno_q_app/README.md`](uno_q_app/README.md) を参照してください。
+
+### MPU9250実測データの扱い
+
+`http://<UNO-Q-IP>:8765/collector.html` で採取したデータのPC保存、再学習、評価、
+UNO Qへの配備はWeb UIから自動実行しません。指示を受けた段階で既存JSONLを保護し、
+各処理を個別に実施します。詳細は [`uno_q_app/README.md`](uno_q_app/README.md) を
+参照してください。
 
 ## センサなしUNO Q実機確認
 

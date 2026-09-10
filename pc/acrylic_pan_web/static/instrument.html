@@ -19,7 +19,8 @@
     <a role="tab" aria-selected="false" href="/collector.html">学習データ採取</a>
     <a role="tab" aria-selected="false" href="/">推論結果</a>
     <a role="tab" aria-selected="false" href="/position.html">位置推定</a>
-    <a role="tab" aria-selected="true" class="active" href="/instrument.html">楽器</a>
+    <a role="tab" aria-selected="true" class="active" href="/instrument.html">クラス演奏</a>
+    <a role="tab" aria-selected="false" href="/instrument-probability.html">確率演奏</a>
   </nav>
 
   <section class="controls card">
@@ -39,7 +40,7 @@
     <div class="instrument-main">
     <div class="card stage-card">
       <div class="section-heading"><div><span class="kicker">LIVE HIT</span><h2>判定エリア</h2></div><div id="lastNote" class="last-note">—</div></div>
-      <div id="hitGrid" class="hit-grid instrument-grid" aria-label="400 × 200 mm アクリル板" aria-live="polite">
+      <div id="hitGrid" class="hit-grid instrument-grid" aria-label="400 × 300 mm アクリル板" aria-live="polite">
         <button type="button" data-class="0"><b>エリア1</b><span>C4</span></button>
         <button type="button" data-class="1"><b>エリア2</b><span>D4</span></button>
         <button type="button" data-class="2"><b>エリア3</b><span>E4</span></button>
@@ -49,7 +50,7 @@
         <button type="button" data-class="6"><b>エリア7</b><span>D5</span></button>
         <button type="button" data-class="7"><b>エリア8</b><span>E5</span></button>
       </div>
-      <div class="panel-size"><span>← 400 mm →</span><span>高さ 200 mm</span></div>
+      <div class="panel-size"><span>← 400 mm →</span><span>高さ 300 mm</span></div>
       <div id="scoreBars" class="score-bars" aria-label="クラス一致度"></div>
       <p class="hint">エリアをクリックすると、その場所に割り当てた音を試聴できます。</p>
     </div>

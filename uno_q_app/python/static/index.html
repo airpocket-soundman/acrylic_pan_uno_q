@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Acrylic Pan 推論結果</title>
+  <link rel="stylesheet" href="/style.css?v=20260829-1">
+  <link rel="stylesheet" href="/controls.css?v=20260718-1">
+  <link rel="stylesheet" href="/tabs.css?v=20260718-4">
+  <link rel="stylesheet" href="/panel-profile.css?v=20260720-1">
+  <link rel="stylesheet" href="/camera-embed.css?v=20260829-1">
+</head>
+<body><main>
+  <header><div><h1>Acrylic Pan <span data-panel-class-count>8</span>エリア分類</h1><p>実測振動から、たたかれたエリアを表示します</p></div><span id="connection" class="badge">未接続</span></header>
+  <nav class="app-tabs" role="tablist" aria-label="動作モード">
+    <a role="tab" aria-selected="false" href="/collector.html">学習データ採取</a>
+    <a role="tab" aria-selected="true" class="active" href="/">推論結果</a>
+    <a role="tab" aria-selected="false" href="/position.html">位置推定</a>
+    <a role="tab" aria-selected="false" href="/instrument.html">クラス演奏</a>
+    <a role="tab" aria-selected="false" href="/instrument-probability.html">確率演奏</a>
+  </nav>
+  <section class="controls card">
+    <label>板仕様 <select id="panelProfile"></select></label>
+    <label>COMポート <select id="port"></select></label><button id="refresh">更新</button>
+    <button id="connect">接続</button><button id="disconnect" disabled>切断</button>
+    <button id="ping" disabled>ボード確認</button><button id="inferenceStart" disabled>推論開始</button>
+    <button id="inferenceStop" disabled>推論停止</button><span id="firmwareMode" class="badge">モード不明</span>
+  </section>
+  <section class="session card" hidden><label>保存先 <input id="output" size="60"></label><label>クラスID <input id="classId" type="number" min="0"></label><button id="newSession">新規セッション</button><div id="sessionPath"></div></section>
+  <section id="stats" class="stats" hidden></section><div id="controlStatus" hidden>接続後、「推論開始」を押してアクリル板をたたいてください。</div><div id="error" class="error"></div>
+  <section class="card camera-panel" aria-labelledby="cameraPanelTitle">
+    <div class="camera-panel-heading">
+      <div><h2 id="cameraPanelTitle">PC配信カメラ</h2><p>このUNO Qページ内へ、LAN上のPCが配信するMJPEG映像をiframeで表示します。</p></div>
+      <span class="badge">PC 192.168.50.177</span>
+    </div>
+    <div class="camera-server-control"><label>PCカメラ配信URL <input id="cameraServerUrl" type="url" value="http://192.168.50.177:8878/"></label><button id="cameraServerApply" type="button">iframeへ表示</button></div>
+    <iframe id="cameraFrame" class="camera-frame" src="http://192.168.50.177:8878/" title="PC配信カメラ映像" loading="eager"></iframe>
+  </section>
+  <section class="card ai-panel live-inference">
+    <div class="ai-toolbar"><h2>判定エリア</h2></div><div id="aiSummary" class="ai-summary">打撃を待っています</div>
+    <div id="hitGrid" class="hit-grid" aria-label="400 × 300 mm アクリル板" aria-live="polite"><div data-class="0">エリア1</div><div data-class="1">エリア2</div><div data-class="2">エリア3</div><div data-class="3">エリア4</div><div data-class="4">エリア5</div><div data-class="5">エリア6</div><div data-class="6">エリア7</div><div data-class="7">エリア8</div><div data-class="8">エリア9</div><div data-class="9">エリア10</div><div data-class="10">エリア11</div><div data-class="11">エリア12</div></div>
+    <div class="panel-size"><span>← 400 mm →</span><span>高さ 300 mm</span></div>
+    <div id="aiOutputs" class="ai-outputs" hidden></div>
+  </section>
+  <details class="card diagnostics" hidden><summary>合成データによるAI診断</summary><label>テスト番号 <input id="aiCase" type="number" min="0" max="7" value="0"></label><button id="aiSelftest">1件実行</button><button id="aiRunAll">8件連続実行</button></details>
+  <button id="capture" hidden></button><button id="demo" hidden></button>
+  <section class="card plot"><h2>判定に使用した振動波形</h2><canvas id="wave" width="1100" height="280"></canvas></section>
+  <section class="card plot"><h2>振動波形のFFT</h2><canvas id="fft" width="1100" height="280"></canvas></section>
+  <footer id="eventInfo">打撃を検出すると、判定エリア、振動波形、FFTを更新します。</footer>
+</main><script src="/panel-profile.js?v=20260720-1"></script><script src="/app.js?v=20260720-1"></script><script src="/camera-embed.js?v=20260829-1"></script></body></html>

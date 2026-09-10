@@ -50,12 +50,11 @@ class PositionWebTests(unittest.TestCase):
             self.assertIn(f'id="{element}"', page)
         self.assertIn("drawHeatmap", script)
         self.assertIn("class_probabilities", script)
-        self.assertIn("/api/ai/latest", script)
-        self.assertIn("gaussian", script)
-        self.assertIn("rho_xy", script)
-        self.assertIn("confidence_ellipse_90", script)
+        self.assertIn("/api/ai/wait", script)
+        self.assertIn("probability_map", script)
+        self.assertIn("60座標", script)
         self.assertIn(".position-marker", css)
-        self.assertIn("8中心点", page)
+        self.assertIn("12中心", page)
 
     def test_all_operating_pages_link_to_position_tab(self):
         for path in ("/", "/collector.html", "/position.html", "/instrument.html"):

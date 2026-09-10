@@ -1,16 +1,70 @@
 <!doctype html>
 <html lang="ja">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Acrylic Pan — 座標回帰</title><link rel="stylesheet" href="app.css"></head>
-<body>
-<header><div class="brand"><div class="brand-mark">◉</div><div><strong>ACRYLIC PAN</strong><small>UNO Q runtime</small></div></div><nav><a class="active" href="position.html">座標テスト</a><a href="instrument.html">楽器モード</a></nav></header>
-<main>
-  <div class="eyebrow">ON-DEVICE INFERENCE</div><h1>打点を、座標にする。</h1>
-  <p class="lead">512サンプルから714特徴量を生成し、今日作成した3モデルアンサンブルと60座標の条件付き確率モデルをUNO Q上で実行します。</p>
-  <div class="statusbar"><span id="runtime" class="pill live">UNO Q 接続確認中</span><span id="sensor" class="pill warn">センサー確認中</span><span class="pill">25.6 kHz / 512 samples</span><span class="pill">714—384—192—96</span><span class="pill">60 position cells</span></div>
-  <div class="grid">
-    <section class="card"><h2>条件付き座標確率 — 400 × 300 × 5 mm</h2><div id="board" class="board"><canvas id="heatmap" width="800" height="600"></canvas><div id="expectedMarker" class="expected-marker"></div><div id="marker" class="marker"></div></div><div class="heat-legend"><span>低</span><i class="heat-scale"></i><span>高</span><span>白緑 = 最尤座標</span><span>橙リング = 確率加重平均</span></div><div class="actions" id="cases"></div></section>
-    <aside class="card"><h2>最新の推論</h2><div class="readout"><div class="metric"><span>最尤座標</span><strong id="map">—</strong></div><div class="metric"><span>期待座標</span><strong id="expected">—</strong></div><div class="metric"><span>ゾーン</span><strong id="zone">—</strong></div><div class="metric"><span>最大確率</span><strong id="confidence">—</strong></div><div class="metric"><span>90%領域</span><strong id="credible">—</strong></div><div class="metric"><span>推論時間</span><strong id="latency">—</strong></div></div><div class="note">本日11:37作成の400×300モデルを移植しています。学習7,132波形・60座標、共通holdout平均距離7.48 mm。完全未学習の外部セッション評価は残っていません。</div></aside>
-  </div>
-  <section class="card" style="margin-top:18px"><h2>移植パリティ診断 — 12中心座標</h2><table class="self-test"><tbody id="selftest"><tr><td>実行中…</td><td></td></tr></tbody></table></section>
-</main>
-<script src="position.js"></script></body></html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Acrylic Pan 位置推定</title>
+  <link rel="stylesheet" href="/style.css?v=20260719-1">
+  <link rel="stylesheet" href="/controls.css?v=20260718-1">
+  <link rel="stylesheet" href="/tabs.css?v=20260719-1">
+  <link rel="stylesheet" href="/position.css?v=20260829-4">
+  <link rel="stylesheet" href="/panel-profile.css?v=20260720-1">
+</head>
+<body><main>
+  <header><div><h1>Acrylic Pan 位置推定</h1><p>PC推論またはデバイス推論による60測定座標の条件付き確率分布をリアルタイム表示します</p></div><span id="connection" class="badge">未接続</span></header>
+  <nav class="app-tabs" role="tablist" aria-label="動作モード">
+    <a role="tab" aria-selected="false" href="/collector.html">学習データ採取</a>
+    <a role="tab" aria-selected="false" href="/">推論結果</a>
+    <a role="tab" aria-selected="true" class="active" href="/position.html">位置推定</a>
+    <a role="tab" aria-selected="false" href="/instrument.html">クラス演奏</a>
+    <a role="tab" aria-selected="false" href="/instrument-probability.html">確率演奏</a>
+  </nav>
+  <section class="controls card">
+    <label>板仕様 <select id="panelProfile"></select></label>
+    <label>COMポート <select id="port"></select></label><button id="refresh">更新</button>
+    <label>確率推論元 <select id="positionSource"><option value="pc">PC（高精度モデル）</option><option value="device">デバイス（Solist-AI）</option></select></label>
+    <button id="connect">接続</button><button id="disconnect" disabled>切断</button>
+    <button id="positionStart" disabled>位置推定開始</button><button id="positionStop" disabled>停止</button>
+    <button id="positionDemo" type="button">表示デモ</button><span id="firmwareMode" class="badge">モード不明</span>
+  </section>
+  <div id="positionStatus" class="position-status">接続後、「位置推定開始」を押してアクリル板をたたいてください。</div>
+  <div id="error" class="error" role="alert"></div>
+
+  <section class="position-layout">
+    <div class="position-main">
+      <div class="card position-stage">
+      <div class="position-heading"><div><span class="kicker">CONDITIONAL POSITION PROBABILITY</span><h2>座標確率カラーマップ</h2></div><div id="coordinateReadout" class="coordinate-readout">X — / Y —</div></div>
+      <div id="positionPanel" class="position-panel" aria-label="400 × 300 mm アクリル板上の条件付き座標確率分布" aria-live="polite">
+        <canvas id="positionHeatmap" width="800" height="400"></canvas>
+        <div id="positionProbabilityCells" class="position-probability-cells" aria-label="60座標確率をドット補間したカラーマップ"></div>
+        <div class="panel-grid" aria-hidden="true"></div>
+        <div id="positionMarker" class="position-marker" hidden><span></span></div>
+        <div class="sensor-marker" aria-label="加速度センサ位置"><span>sensor</span></div>
+        <div class="clamp-marker" aria-label="固定領域"><span>固定</span></div>
+      </div>
+      <div class="position-axis"><span>0 mm</span><span>400 mm</span></div>
+      <p id="scopeNote" class="scope-note">各色は、波形を条件としてモデルが12中心＋48四隅へ直接割り当てた確率です。白い十字は最尤座標、期待座標は別欄に表示します。</p>
+      </div>
+      <aside class="position-side">
+        <div class="card metric-card"><span class="kicker">DISTRIBUTION</span><div class="metric-row"><span>最尤座標（白十字）</span><strong id="metricCoordinate">—</strong></div><div class="metric-row"><span>期待座標（平均）</span><strong id="metricExpectedCoordinate">—</strong></div><div class="metric-row"><span>最大セル確率</span><strong id="metricConfidence">—</strong></div><div class="metric-row"><span>90%信用領域</span><strong id="metricRegion">—</strong></div><div class="metric-row"><span>分布モーメント</span><strong id="metricSigma">—</strong></div><div class="metric-row"><span>処理方式</span><strong id="metricMethod">—</strong></div><div class="metric-row"><span>デバイス処理時間</span><strong id="metricDeviceTiming">—</strong></div></div>
+        <div class="card"><span class="kicker">AREA PROBABILITY</span><h2><span data-panel-class-count>8</span>エリア確率</h2><div id="areaProbabilities" class="area-probabilities"></div></div>
+        <div class="card interpolation-note"><strong>表示の意味</strong><p>白い十字は最も確率が高い測定座標なので、赤い領域と対応します。期待座標は全候補の確率加重平均として別欄に表示します。色は60点のsoftmax確率を40×30ドット・10段階で表示しています。</p></div>
+      </aside>
+    </div>
+    <aside class="position-camera">
+      <div class="card camera-card">
+        <div class="position-heading"><div><span class="kicker">CAMERA</span><h2>USBカメラ</h2></div><span id="cameraState" class="camera-state">準備中</span></div>
+        <div class="camera-viewport">
+          <video id="usbCamera" autoplay playsinline muted aria-label="USBカメラ映像"></video>
+          <div id="cameraPlaceholder" class="camera-placeholder">使用するUSBカメラを選んで「カメラ開始」を押してください</div>
+        </div>
+        <div class="camera-controls">
+          <label>カメラ<select id="cameraDevice"></select></label>
+          <button id="cameraStart" type="button">カメラ開始</button>
+          <button id="cameraStop" type="button" disabled>停止</button>
+        </div>
+      </div>
+    </aside>
+  </section>
+</main><script src="/panel-profile.js?v=20260720-1"></script><script src="/position.js?v=20260827-1"></script></body>
+</html>

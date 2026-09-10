@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Acrylic Pan Vibration Monitor</title><link rel="stylesheet" href="/style.css?v=20260718-4"><link rel="stylesheet" href="/controls.css?v=20260718-1"><link rel="stylesheet" href="/collector.css?v=20260718-4"><link rel="stylesheet" href="/tabs.css?v=20260718-4"><link rel="stylesheet" href="/panel-profile.css?v=20260720-1"></head>
+<body><main>
+  <header><div><h1>Acrylic Pan Vibration Monitor</h1><p>振動データの記録・FFT表示・<span data-panel-class-count>8</span>エリアガイド採取</p></div><span id="connection" class="badge">未接続</span></header>
+  <nav class="app-tabs" role="tablist" aria-label="動作モード">
+    <a role="tab" aria-selected="true" class="active" href="/collector.html">学習データ採取</a>
+    <a role="tab" aria-selected="false" href="/">推論結果</a>
+    <a role="tab" aria-selected="false" href="/position.html">位置推定</a>
+    <a role="tab" aria-selected="false" href="/instrument.html">クラス演奏</a>
+    <a role="tab" aria-selected="false" href="/instrument-probability.html">確率演奏</a>
+  </nav>
+  <section class="controls card">
+    <label>板仕様 <select id="panelProfile"></select></label>
+    <label>COMポート <select id="port"></select></label><button id="refresh">更新</button>
+    <button id="connect">接続</button><button id="disconnect" disabled>切断</button>
+    <button id="ping" disabled>ボード確認</button><button id="capture" disabled>測定トリガー</button>
+    <button id="demo">デモ波形</button>
+  </section>
+  <div class="capture-spec card">収録仕様: MPU9250・±16 g・4 kHz・80点 / 20 ms（プリトリガ10点 / 2.5 ms）。採取と推論は同じイベント形式です。</div>
+  <section class="session card"><label>保存先 <input id="output" size="60"></label>
+    <label>クラスID（任意） <input id="classId" type="number" min="0"></label>
+    <button id="newSession">新規セッション</button><div id="sessionPath"></div></section>
+  <section id="stats" class="stats"></section><div id="controlStatus">「採取開始」後、表示された位置を叩くとMPU9250のZ軸80点イベントを自動保存します。</div><div id="error" class="error"></div>
+  <section class="card collection-panel">
+    <div class="collection-toolbar">
+      <div><h2 data-panel-class-label="エリア ガイド付きデータ採取">12エリア ガイド付きデータ採取（全60点対応）</h2><p>マーカー位置を叩いてください。受信後、自動的に次の測定を待ち受けます。</p></div>
+      <label>位置パターン <select id="collectionPattern"><option value="all60" selected>全60点（中心＋四隅）</option><option value="center">A: エリア中心 1点</option><option value="corners">B: 50 mm格子 四隅 4点</option></select></label>
+      <label>各位置の回数 <input id="collectionRepetitions" type="number" min="1" max="1000" value="50"></label>
+      <button id="collectionStart" disabled>採取開始</button>
+      <button id="collectionStop" disabled>採取停止</button>
+      <button id="collectionUndo" class="danger">直前の1件を取り消して再測定</button>
+    </div>
+    <div id="collectionSummary" class="collection-summary">採取を開始するとエリア1から順に案内します。</div>
+    <div id="collectionGrid" class="collection-grid">
+      <div class="collection-cell" data-area="0"><b>エリア1</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="1"><b>エリア2</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="2"><b>エリア3</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="3"><b>エリア4</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="4"><b>エリア5</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="5"><b>エリア6</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="6"><b>エリア7</b><span>0 / 0</span></div>
+      <div class="collection-cell" data-area="7"><b>エリア8</b><span>0 / 0</span></div>
+      <div id="collectionClamp" class="collection-clamp" hidden><span>固定具</span></div>
+      <div id="collectionPoints" class="collection-points"></div>
+      <div id="collectionMarker" class="collection-marker" hidden><span></span></div>
+    </div>
+    <p class="collection-hint">打点は選んだ位置パターンで表示します。採取中は任意の打点をクリックすると、順序に関係なくその位置へ切り替えられます。</p>
+    <div class="panel-axis"><span>← 400 mm →</span><span>高さ 300 mm</span></div>
+    <div class="position-progress-wrap">
+      <h3>ラベル・打点別の採取件数</h3>
+      <div id="positionProgress" class="position-progress" aria-live="polite"></div>
+    </div>
+  </section>
+  <section class="card library-panel">
+    <div class="library-toolbar">
+      <div><h2>MPU9250 採取済みデータ</h2><p>「一覧更新」で採取JSONLを読み込みます。行を選ぶと下のグラフに波形とFFTを描画します。削除は採取停止中のみ実行できます。</p></div>
+      <label>セッション <select id="librarySession"></select></label>
+      <button id="libraryRefresh">一覧更新</button>
+      <button id="libraryDeleteSession" class="danger">全採取データを削除</button>
+    </div>
+    <div id="librarySummary" class="library-summary">保存先を確認して「一覧更新」を押してください。</div>
+    <div class="library-list-wrap">
+      <div id="libraryList" class="library-list" aria-live="polite"></div>
+    </div>
+    <div class="library-actions">
+      <span id="librarySelection">波形を表示するデータを選んでください。</span>
+      <button id="libraryPrevious" disabled>← 戻る</button>
+      <button id="libraryNext" disabled>次へ →</button>
+      <button id="libraryDelete" class="danger" disabled>表示中のデータを削除</button>
+    </div>
+  </section>
+  <section class="card plot"><h2>振動波形</h2><canvas id="wave" width="1100" height="280"></canvas></section>
+  <section class="card plot"><h2>FFTスペクトル（DC除去・Hann窓）</h2><canvas id="fft" width="1100" height="280"></canvas></section>
+  <footer id="eventInfo">イベントを待っています。</footer>
+</main><script src="/panel-profile.js?v=20260720-1"></script><script src="/app.js?v=20260829-5"></script></body></html>

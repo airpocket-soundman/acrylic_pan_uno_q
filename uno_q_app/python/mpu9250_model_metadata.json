@@ -1,0 +1,75 @@
+{
+  "model": "acrylic_pan_mpu9250_unified_400x300_v2",
+  "created_from": "measured KX134 sessions converted to MPU9250 equivalent",
+  "dataset_sha256": "046c7bdf15dec5d5d543a822bad7e40d8144522d0b59687668e46dba875bc37c",
+  "event_count": 7132,
+  "session_count": 11,
+  "sensor": {
+    "name": "MPU9250",
+    "sample_rate_hz": 4000,
+    "range_g": 16,
+    "bandwidth_hz": 1130,
+    "event_samples": 80,
+    "trigger_index": 10
+  },
+  "tasks": [
+    "12class",
+    "60class",
+    "pseudo_xy_from_60class",
+    "direct_xy_regression"
+  ],
+  "direct_xy_model": {
+    "type": "fully-trained relu MLP",
+    "architecture": [
+      120,
+      384,
+      192,
+      96,
+      2
+    ],
+    "trainable_parameter_count": 139106,
+    "validation_training_iterations": 213,
+    "full_training_iterations": 191
+  },
+  "validation_split": "repetition modulo 5 equals zero",
+  "validation": {
+    "count": 1426,
+    "area_accuracy_12class": 0.9950911640953717,
+    "area_accuracy_60class": 0.9950911640953717,
+    "position_top1_accuracy": 0.9908835904628331,
+    "pseudo_xy_mae_mm": 0.752290621308227,
+    "direct_xy_mae_mm": 4.8509506972634115,
+    "pseudo_xy_p90_mm": 0.001012748594184968,
+    "direct_xy_p90_mm": 8.131939552887058
+  },
+  "full_training": {
+    "count": 7132,
+    "area_accuracy_12class": 0.9998597868760516,
+    "area_accuracy_60class": 0.9998597868760516,
+    "position_top1_accuracy": 0.9983174425126192,
+    "pseudo_xy_mae_mm": 0.07119752810934964,
+    "direct_xy_mae_mm": 2.877859940272445,
+    "pseudo_xy_p90_mm": 0.0004073056785442912,
+    "direct_xy_p90_mm": 5.002347207738835
+  },
+  "clipping": {
+    "event_count": 7132,
+    "clipped_event_count": 2777,
+    "clipped_event_fraction": 0.3893718452047112,
+    "clipped_sample_count": 4916,
+    "clipped_sample_fraction": 0.0021540241166573193,
+    "preclip_peak_g_percentiles": {
+      "p50": 14.967707170857466,
+      "p90": 20.342633746358135,
+      "p95": 21.671641207932037,
+      "p99": 24.277662629867457,
+      "max": 29.712287793641348
+    }
+  },
+  "model_sha256": "54390ab81c3e230928c0877e69e6e8be573d0cc1535ad48f3223aa6510108d61",
+  "training_seed_sha256": "18684e0bda4a1bf1381ae2275f0307a47a20a586eff876caabbf21963cb7d8ed",
+  "limitations": [
+    "Initial data is an offline sensor-domain conversion; fresh MPU9250 recordings are needed for final calibration.",
+    "The conversion cannot reproduce package, mounting, cross-axis, clock-jitter, or sensor-noise differences."
+  ]
+}

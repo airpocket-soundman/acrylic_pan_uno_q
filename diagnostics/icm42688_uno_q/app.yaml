@@ -1,0 +1,6 @@
+name: ICM42688 SPI Diagnostic
+icon: "🔎"
+description: Read-only ICM-42688-P SPI identity and acceleration check on UNO Q
+
+bricks: []
+ports: []

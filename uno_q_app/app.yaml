@@ -1,6 +1,6 @@
 name: Acrylic Pan XY Instrument
 icon: "🥁"
-description: Run coordinate inference and the Acrylic Pan instrument UI on UNO Q
+description: MPU9250 acquisition, 12/60-class and XY training, inference, heatmap and instrument UI
 
 bricks: []
 ports:

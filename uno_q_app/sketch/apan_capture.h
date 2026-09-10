@@ -15,13 +15,15 @@ struct ApanEvent {
 
 class ApanCapture {
  public:
-  ApanCapture(uint16_t jerkThreshold, uint16_t levelThreshold);
+  ApanCapture(uint16_t jerkThreshold, uint16_t levelThreshold,
+              uint16_t confirmationThreshold, uint16_t confirmationSamples = 16);
 
   void feed(int16_t sample);
   bool ready() const;
   const ApanEvent& event() const;
   void release();
-  void setThresholds(uint16_t jerkThreshold, uint16_t levelThreshold);
+  void setThresholds(uint16_t jerkThreshold, uint16_t levelThreshold,
+                     uint16_t confirmationThreshold);
 
  private:
   static uint16_t magnitude(int16_t value);
@@ -34,9 +36,13 @@ class ApanCapture {
   int16_t previousSample_ = 0;
   bool hasPreviousSample_ = false;
   bool collecting_ = false;
+  bool candidateConfirmed_ = false;
   bool ready_ = false;
   uint16_t eventWrite_ = 0;
   uint16_t jerkThreshold_;
   uint16_t levelThreshold_;
+  uint16_t confirmationThreshold_;
+  uint16_t confirmationSamples_;
+  int16_t candidateBaseline_ = 0;
   ApanEvent event_ = {};
 };

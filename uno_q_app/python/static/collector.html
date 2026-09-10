@@ -18,11 +18,11 @@
     <button id="ping" disabled>ボード確認</button><button id="capture" disabled>測定トリガー</button>
     <button id="demo">デモ波形</button>
   </section>
-  <div class="capture-spec card">収録仕様: MPU9250・±16 g・4 kHz・80点 / 20 ms（プリトリガ10点 / 2.5 ms）。採取と推論は同じイベント形式です。</div>
+  <div class="capture-spec card">収録仕様: KX134-1211・±32 g・25.6 kHz・512点 / 20 ms（プリトリガ64点 / 2.5 ms）。採取と推論は同じイベント形式です。</div>
   <section class="session card"><label>保存先 <input id="output" size="60"></label>
     <label>クラスID（任意） <input id="classId" type="number" min="0"></label>
     <button id="newSession">新規セッション</button><div id="sessionPath"></div></section>
-  <section id="stats" class="stats"></section><div id="controlStatus">「採取開始」後、表示された位置を叩くとMPU9250のZ軸80点イベントを自動保存します。</div><div id="error" class="error"></div>
+  <section id="stats" class="stats"></section><div id="controlStatus">「採取開始」後、表示された位置を叩くとKX134のZ軸512点イベントを保存します。</div><div id="error" class="error"></div>
   <section class="card collection-panel">
     <div class="collection-toolbar">
       <div><h2 data-panel-class-label="エリア ガイド付きデータ採取">12エリア ガイド付きデータ採取（全60点対応）</h2><p>マーカー位置を叩いてください。受信後、自動的に次の測定を待ち受けます。</p></div>
@@ -55,7 +55,7 @@
   </section>
   <section class="card library-panel">
     <div class="library-toolbar">
-      <div><h2>MPU9250 採取済みデータ</h2><p>「一覧更新」で採取JSONLを読み込みます。行を選ぶと下のグラフに波形とFFTを描画します。削除は採取停止中のみ実行できます。</p></div>
+      <div><h2>KX134 採取済みデータ</h2><p>「一覧更新」で採取JSONLを読み込みます。行を選ぶと下のグラフに波形とFFTを描画します。削除は採取停止中のみ実行できます。</p></div>
       <label>セッション <select id="librarySession"></select></label>
       <button id="libraryRefresh">一覧更新</button>
       <button id="libraryDeleteSession" class="danger">全採取データを削除</button>

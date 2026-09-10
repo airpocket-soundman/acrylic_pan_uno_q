@@ -1,6 +1,6 @@
 name: Acrylic Pan XY Instrument
 icon: "🥁"
-description: MPU9250 acquisition, 12/60-class and XY training, inference, heatmap and instrument UI
+description: KX134 25.6 kHz acquisition, 60-position probability and XY inference, heatmap and instrument UI
 
 bricks: []
 ports:

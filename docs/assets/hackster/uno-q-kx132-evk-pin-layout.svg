@@ -12,20 +12,20 @@
     <text x="0" y="26" class="small">Breakout/evaluation board, component side</text>
     <rect x="0" y="42" width="390" height="162" rx="8" fill="#102733" stroke="#557078" stroke-width="3"/>
     <g text-anchor="middle" fill="#fff" class="tiny connector">
-      <g transform="translate(30 78)"><circle r="14" fill="#d84437" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">1</text><text y="32" fill="#fff">VDD</text></g>
-      <g transform="translate(85 78)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">3</text><text y="32" fill="#fff">X</text></g>
-      <g transform="translate(140 78)"><circle r="14" fill="#2877c7" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">5</text><text y="32" fill="#fff">SCLK</text></g>
-      <g transform="translate(195 78)"><circle r="14" fill="#e27b23" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">7</text><text y="32" fill="#fff">SDI</text></g>
-      <g transform="translate(250 78)"><circle r="14" fill="#15936f" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">9</text><text y="32" fill="#fff">SDO</text></g>
-      <g transform="translate(305 78)"><circle r="14" fill="#c79b00" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">11</text><text y="32" fill="#fff">INT1</text></g>
-      <g transform="translate(360 78)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">13</text><text y="32" fill="#fff">NC</text></g>
-      <g transform="translate(30 156)"><circle r="14" fill="#854fc6" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">2</text><text y="32" fill="#fff">nCS</text></g>
-      <g transform="translate(85 156)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">4</text><text y="32" fill="#fff">Y</text></g>
-      <g transform="translate(140 156)"><circle r="14" fill="#d84437" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">6</text><text y="32" fill="#fff">IOVDD</text></g>
-      <g transform="translate(195 156)"><circle r="14" fill="#1f272a" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">8</text><text y="32" fill="#fff">GND</text></g>
-      <g transform="translate(250 156)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">10</text><text y="32" fill="#fff">NC</text></g>
-      <g transform="translate(305 156)"><circle r="14" fill="#008da3" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">12</text><text y="32" fill="#fff">INT2</text></g>
-      <g transform="translate(360 156)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">14</text><text y="32" fill="#fff">NC</text></g>
+      <g transform="translate(30 156)"><circle r="14" fill="#d84437" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">1</text><text y="32" fill="#fff">VDD</text></g>
+      <g transform="translate(85 156)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">3</text><text y="32" fill="#fff">X</text></g>
+      <g transform="translate(140 156)"><circle r="14" fill="#2877c7" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">5</text><text y="32" fill="#fff">SCLK</text></g>
+      <g transform="translate(195 156)"><circle r="14" fill="#e27b23" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">7</text><text y="32" fill="#fff">SDI</text></g>
+      <g transform="translate(250 156)"><circle r="14" fill="#15936f" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">9</text><text y="32" fill="#fff">SDO</text></g>
+      <g transform="translate(305 156)"><circle r="14" fill="#c79b00" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">11</text><text y="32" fill="#fff">INT1</text></g>
+      <g transform="translate(360 156)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">13</text><text y="32" fill="#fff">NC</text></g>
+      <g transform="translate(30 78)"><circle r="14" fill="#854fc6" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">2</text><text y="32" fill="#fff">nCS</text></g>
+      <g transform="translate(85 78)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">4</text><text y="32" fill="#fff">Y</text></g>
+      <g transform="translate(140 78)"><circle r="14" fill="#d84437" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">6</text><text y="32" fill="#fff">IOVDD</text></g>
+      <g transform="translate(195 78)"><circle r="14" fill="#1f272a" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">8</text><text y="32" fill="#fff">GND</text></g>
+      <g transform="translate(250 78)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">10</text><text y="32" fill="#fff">NC</text></g>
+      <g transform="translate(305 78)"><circle r="14" fill="#008da3" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">12</text><text y="32" fill="#fff">INT2</text></g>
+      <g transform="translate(360 78)"><circle r="14" fill="#9ba4b0" stroke="#fff" stroke-width="2"/><text y="4" fill="#fff">14</text><text y="32" fill="#fff">NC</text></g>
     </g>
   </g>
 

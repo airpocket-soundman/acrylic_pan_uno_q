@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import mimetypes
 import threading
-import time
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,6 +18,9 @@ class Handler(SimpleHTTPRequestHandler):
     synthesize_audio: object
     set_retrigger_guard: object
     set_sensor_thresholds: object
+    wait_for_ai: object
+    audio_cache: dict[tuple[tuple[str, str], ...], bytes] = {}
+    audio_cache_lock = threading.RLock()
 
     def __init__(self, *args, **kwargs): super().__init__(*args, directory=str(self.static_root), **kwargs)
     def log_message(self, format: str, *args) -> None: return
@@ -31,7 +33,7 @@ class Handler(SimpleHTTPRequestHandler):
     def _event(self):
         latest = self._latest(); event = dict(latest.get("event") or {})
         if event:
-            event["samples"] = event.get("z", []); event["source"] = latest.get("source", "mpu9250_capture")
+            event["samples"] = event.get("z", []); event["source"] = latest.get("source", "kx134_capture")
             event["sequence"] = latest.get("sequence", event.get("sequence"))
         return event
 
@@ -40,11 +42,21 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/status": return self._json(self.get_status())
         if path == "/api/audio/note.wav":
             options = {name: values[-1] for name, values in parse_qs(parsed.query).items()}
-            body = self.synthesize_audio(options)
+            key = tuple(sorted(options.items()))
+            with self.audio_cache_lock:
+                body = self.audio_cache.get(key)
+            cache_hit = body is not None
+            if body is None:
+                body = self.synthesize_audio(options)
+                with self.audio_cache_lock:
+                    if len(self.audio_cache) >= 256:
+                        self.audio_cache.pop(next(iter(self.audio_cache)))
+                    self.audio_cache[key] = body
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "audio/wav")
-            self.send_header("Cache-Control", "no-store")
+            self.send_header("Cache-Control", "public, max-age=3600")
             self.send_header("X-Audio-Synth", "UNO-Q")
+            self.send_header("X-Audio-Cache", "hit" if cache_hit else "miss")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers(); self.wfile.write(body); return
         if path == "/api/ports": return self._json({"ports": ["UNO Q internal SPI"]})
@@ -52,12 +64,8 @@ class Handler(SimpleHTTPRequestHandler):
         if path == "/api/events/latest": return self._json(self._event())
         if path == "/api/ai/wait":
             query = parse_qs(parsed.query); after = (query.get("after") or [None])[0]
-            timeout = min(float((query.get("timeout") or ["1"])[0]), 5.0); deadline = time.monotonic() + timeout
-            while time.monotonic() < deadline:
-                latest = self._latest()
-                if latest and str(latest.get("sequence")) != str(after): return self._json(latest)
-                time.sleep(.02)
-            return self._json({})
+            timeout = min(float((query.get("timeout") or ["1"])[0]), 5.0)
+            return self._json(self.wait_for_ai(after, timeout))
         if path in ("/api/collection", "/api/session"): return self._json(self.training.status())
         if path == "/api/collection/targets":
             pattern = (parse_qs(parsed.query).get("pattern") or ["all60"])[0]
@@ -117,12 +125,14 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 def start_web_server(static_root: Path, get_status, update_runtime, run_demo, training,
-                     synthesize_audio, set_retrigger_guard, set_sensor_thresholds, port: int = 8765):
+                     synthesize_audio, set_retrigger_guard, set_sensor_thresholds,
+                     wait_for_ai, port: int = 8765):
     handler = type("AcrylicPanHandler", (Handler,), {"static_root": static_root,
         "get_status": staticmethod(get_status), "update_runtime": staticmethod(update_runtime),
         "run_demo": staticmethod(run_demo), "training": training,
         "synthesize_audio": staticmethod(synthesize_audio),
         "set_retrigger_guard": staticmethod(set_retrigger_guard),
-        "set_sensor_thresholds": staticmethod(set_sensor_thresholds)})
+        "set_sensor_thresholds": staticmethod(set_sensor_thresholds),
+        "wait_for_ai": staticmethod(wait_for_ai)})
     server = ThreadingHTTPServer(("0.0.0.0", port), handler)
     threading.Thread(target=server.serve_forever, name="apan-web", daemon=True).start(); return server

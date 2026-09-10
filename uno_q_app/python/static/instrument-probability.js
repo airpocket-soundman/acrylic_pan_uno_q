@@ -61,6 +61,9 @@ let settings = loadSettings();
 let audioContext = null;
 let masterGain = null;
 let mediaPrimed = false;
+const unoQAudioBuffers = new Map();
+const unoQAudioLoads = new Map();
+let unoQPrimeTimer = null;
 let performanceEnabled = false;
 let lastSequence = null;
 let loopRunning = true;
@@ -166,21 +169,41 @@ async function ensureAudio(){
     const primer=new Audio('data:audio/wav;base64,UklGRsQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
     primer.volume=0;await primer.play();mediaPrimed=true;
   }
+  await primeUnoQAudio();
 }
-async function playUnoQMedia(note,area,probability,duration){
+function unoQAudioUrl(note,area,duration){
   const parameters=new URLSearchParams({note,area:String(area),instrument:settings.instrument,
-    velocity:String(Math.max(.12,Math.min(.95,.2+probability*.8))),volume:'1',
+    velocity:'1',volume:'1',
     release:String(Math.max(.03,duration*.72)),decay:String(Math.max(.03,duration*.22)),
     sustain:'.12',echo_mix:'.12',echo_delay:'.18',echo_feedback:'.20'});
-  const voice=new Audio(`/api/audio/note.wav?${parameters}`);voice.preload='auto';voice.volume=settings.masterVolume;
-  await voice.play();return voice;
+  return `/api/audio/note.wav?${parameters}`;
+}
+async function loadUnoQAudio(note,area,duration){
+  const url=unoQAudioUrl(note,area,duration);
+  if(unoQAudioBuffers.has(url))return unoQAudioBuffers.get(url);
+  if(!unoQAudioLoads.has(url))unoQAudioLoads.set(url,fetch(url,{cache:'force-cache'}).then(response=>{
+    if(!response.ok)throw new Error(`${response.status} ${response.statusText}`);
+    return response.arrayBuffer();
+  }).then(bytes=>audioContext.decodeAudioData(bytes)).then(buffer=>{unoQAudioBuffers.set(url,buffer);unoQAudioLoads.delete(url);return buffer;}).catch(error=>{unoQAudioLoads.delete(url);throw error;}));
+  return unoQAudioLoads.get(url);
+}
+function liveNoteDuration(){return (settings.instrument==='harpsichord'?.45:(settings.instrument==='drums'?.22:1.15))*noteLengthScale;}
+async function primeUnoQAudio(){
+  const duration=liveNoteDuration(),jobs=[];
+  for(let area=0;area<activePanel.class_count;area++){const note=panelNote(area);if(note)jobs.push(loadUnoQAudio(note,area,duration));}
+  await Promise.all(jobs);
+}
+function scheduleUnoQAudioPrime(){if(!audioContext)return;if(unoQPrimeTimer)clearTimeout(unoQPrimeTimer);unoQPrimeTimer=setTimeout(()=>primeUnoQAudio().catch(error=>$('error').textContent=L('UNO Q音声: ','UNO Q audio: ')+error.message),180);}
+async function playUnoQMedia(note,area,probability,duration){
+  const buffer=await loadUnoQAudio(note,area,duration),voice=audioContext.createBufferSource(),gain=audioContext.createGain();
+  voice.buffer=buffer;gain.gain.value=Math.max(.12,Math.min(.95,.2+probability*.8));voice.connect(gain).connect(masterGain);voice.start();return voice;
 }
 function playArea(area,probability,source='live',beatLength=1){
   if(source==='live'&&guidePlaying)stopGuide(false);
   if(!mediaPrimed)return;
   const note=panelNote(area);if(!note)return;
   const rhythmicLength=source==='guide'?Math.max(.45,Math.min(2,beatLength)):1;
-  const duration=(settings.instrument==='harpsichord'?.45:(settings.instrument==='drums'?.22:1.15))*noteLengthScale*rhythmicLength;
+  const duration=liveNoteDuration()*rhythmicLength;
   playUnoQMedia(note,area,probability,duration).then(voice=>{if(source==='guide'){guideOscillators.add(voice);voice.onended=()=>guideOscillators.delete(voice);}}).catch(reason=>{$('error').textContent=L('音声再生: ','Audio playback: ')+reason.message;});
   $('lastNote').textContent=`A${area+1} ${note} · ${(probability*100).toFixed(1)}%`;
   performanceMessage={kind:'note',area,note,percent:(probability*100).toFixed(1)};renderPerformanceStatus();
@@ -325,11 +348,11 @@ $('connect').onclick=async()=>{try{await api('/api/connect',{port:$('port').valu
 $('disconnect').onclick=async()=>{try{performanceEnabled=false;await api('/api/disconnect',{});await refreshStatus();}catch(error){$('error').textContent=error.message;}};
 $('performanceStart').onclick=startPerformance;$('performanceStop').onclick=stopPerformance;$('probabilityDemo').onclick=demo;
 $('positionSource').onchange=async()=>{try{const current=await api('/api/status');if(current.connected&&!current.inference_active)await api('/api/device/mode',{mode:modeForSource()});await refreshStatus();}catch(error){$('error').textContent=error.message;}};
-$('instrumentSelect').value=settings.instrument;$('instrumentSelect').onchange=()=>{settings.instrument=$('instrumentSelect').value;saveInstrument();};
+$('instrumentSelect').value=settings.instrument;$('instrumentSelect').onchange=()=>{settings.instrument=$('instrumentSelect').value;saveInstrument();scheduleUnoQAudioPrime();};
 $('masterVolume').value=String(Math.round(settings.masterVolume*100));const updateMasterVolume=()=>{settings.masterVolume=Number($('masterVolume').value)/100;$('masterVolumeValue').textContent=`${Math.round(settings.masterVolume*100)}%`;if(masterGain&&audioContext)masterGain.gain.setTargetAtTime(settings.masterVolume,audioContext.currentTime,.01);saveInstrument();};$('masterVolume').oninput=updateMasterVolume;updateMasterVolume();
-$('songSelect').value=localStorage.getItem(SONG_KEY)||'';$('songSelect').onchange=()=>configureSong($('songSelect').value,true);
+$('songSelect').value=localStorage.getItem(SONG_KEY)||'';$('songSelect').onchange=()=>{configureSong($('songSelect').value,true);scheduleUnoQAudioPrime();};
 $('songReset').onclick=()=>{stopGuide(false);songStep=0;updateSongAssist();};$('guidePlay').onclick=toggleGuide;configureSong($('songSelect').value,true);
-$('noteLength').value=String(Math.round(noteLengthScale*100));const updateNoteLength=()=>{noteLengthScale=Number($('noteLength').value)/100;$('noteLengthValue').textContent=`${Math.round(noteLengthScale*100)}%`;localStorage.setItem(NOTE_LENGTH_KEY,String(noteLengthScale));};$('noteLength').oninput=updateNoteLength;updateNoteLength();
+$('noteLength').value=String(Math.round(noteLengthScale*100));const updateNoteLength=()=>{noteLengthScale=Number($('noteLength').value)/100;$('noteLengthValue').textContent=`${Math.round(noteLengthScale*100)}%`;localStorage.setItem(NOTE_LENGTH_KEY,String(noteLengthScale));scheduleUnoQAudioPrime();};$('noteLength').oninput=updateNoteLength;updateNoteLength();
 $('languageToggle').onclick=()=>{language=language==='ja'?'en':'ja';applyLanguage();};applyLanguage();
 $('displayMode').value='camera';localStorage.setItem(DISPLAY_MODE_KEY,'camera');applyDisplayMode();
 $('heatmapToggle').onclick=toggleHeatmap;updateHeatmapToggle();

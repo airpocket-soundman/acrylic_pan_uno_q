@@ -4,13 +4,13 @@ const DEFAULT_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G
 const MARIO_NOTES = ['E4', 'G4', 'A4', 'A#4', 'B4', 'C5', 'E5', 'G5'].concat(['A5','B5','C6','E6']);
 const DEFAULTS = {instrument:'steel_drum',masterVolume:.70,transpose:0,brightness:.65,attack:.005,decay:.35,sustain:.18,release:.90,echoMix:.18,echoDelay:.18,echoFeedback:.24,velocity:.70,retriggerGuardMs:80,notes:DEFAULT_NOTES};
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-const STEEL_PARTIALS = [[1,.82,1],[2,.22,.72],[3.01,.09,.44],[4.08,.042,.28],[5.16,.018,.18]];
 let settings = loadSettings();
 let lastPlayedSequence = null;
 let performanceEnabled = false;
 let pollBusy = false;
 let inferenceLoopRunning = false;
 let audio = null;
+let audioPrimeTimer = null;
 let hitClearTimer = null;
 let cameraStream = null;
 let panelClassCount = 8;
@@ -53,63 +53,30 @@ function noteOptions() {
   for(let octave=2;octave<=6;octave++) for(const name of NOTE_NAMES) notes.push(`${name}${octave}`);
   return notes;
 }
-function noteFrequency(note, octaveShift=0) {
-  const match=/^([A-G])(#?)(\d)$/.exec(note);
-  if(!match) return 440;
-  const semitone={C:-9,D:-7,E:-5,F:-4,G:-2,A:0,B:2}[match[1]]+(match[2]?1:0)+(Number(match[3])+octaveShift-4)*12;
-  return 440*Math.pow(2,semitone/12);
-}
-
 class AudioEngine {
   constructor() {
     const AudioContext=window.AudioContext||window.webkitAudioContext;
     if(!AudioContext) throw new Error('このブラウザはWeb Audioに対応していません。');
     this.context=new AudioContext({latencyHint:'interactive'});
-    this.bus=this.context.createGain();
-    this.dry=this.context.createGain();
-    this.delay=this.context.createDelay(1.0);
-    this.feedback=this.context.createGain();
-    this.wet=this.context.createGain();
     this.master=this.context.createGain();
     this.compressor=this.context.createDynamicsCompressor();
     this.compressor.threshold.value=-14; this.compressor.knee.value=18; this.compressor.ratio.value=5;
-    this.bus.connect(this.dry).connect(this.master);
-    this.bus.connect(this.delay); this.delay.connect(this.wet).connect(this.master);
-    this.delay.connect(this.feedback).connect(this.delay);
     this.master.connect(this.compressor).connect(this.context.destination);
+    this.buffers=new Map();
+    this.loads=new Map();
     this.update();
   }
   async resume(){if(this.context.state!=='running') await this.context.resume();}
-  update(){const t=this.context.currentTime;this.master.gain.setTargetAtTime(settings.masterVolume,t,.015);this.dry.gain.setTargetAtTime(1-settings.echoMix*.3,t,.015);this.wet.gain.setTargetAtTime(settings.echoMix,t,.015);this.delay.delayTime.setTargetAtTime(settings.echoDelay,t,.015);this.feedback.gain.setTargetAtTime(settings.echoFeedback,t,.015);}
-  envelope(gain, now, level, durationScale=1){
-    const attack=Math.max(.001,settings.attack), decay=Math.max(.01,settings.decay*durationScale), release=Math.max(.03,settings.release*durationScale);
-    gain.gain.cancelScheduledValues(now);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(Math.max(.001,level),now+attack);gain.gain.exponentialRampToValueAtTime(Math.max(.0005,level*settings.sustain),now+attack+decay);gain.gain.exponentialRampToValueAtTime(.0001,now+attack+decay+release);
-    return now+attack+decay+release+.05;
-  }
-  oscillatorVoice(freq, velocity, type, ratios, weights, durationScale=1){
-    const now=this.context.currentTime, voice=this.context.createGain(), filter=this.context.createBiquadFilter();
-    filter.type='lowpass'; filter.frequency.value=500+settings.brightness*9500; filter.Q.value=.7; voice.connect(filter).connect(this.bus);
-    const stop=this.envelope(voice,now,velocity,durationScale);
-    ratios.forEach((ratio,index)=>{const osc=this.context.createOscillator(),part=this.context.createGain();osc.type=type;osc.frequency.value=freq*ratio;part.gain.value=weights[index];osc.connect(part).connect(voice);osc.start(now);osc.stop(stop);});
-  }
-  steel(freq,velocity){
-    const now=this.context.currentTime,voice=this.context.createGain(),filter=this.context.createBiquadFilter();
-    filter.type='lowpass';filter.frequency.value=Math.min(12000,Math.max(3200,freq*(7+settings.brightness*7)));filter.Q.value=.55;voice.connect(filter).connect(this.bus);const stop=this.envelope(voice,now,velocity,.92);
-    const highNoteDamping=Math.max(.48,Math.min(1,700/freq));
-    STEEL_PARTIALS.forEach(([ratio,weight,decayScale],index)=>{const osc=this.context.createOscillator(),g=this.context.createGain();const brightnessGain=index===0?1:(.55+settings.brightness*.55);const damping=index===0?1:Math.pow(highNoteDamping,index*.55);const level=Math.max(.0001,weight*brightnessGain*damping);osc.type='sine';osc.frequency.value=freq*ratio;g.gain.setValueAtTime(level,now);if(index>0)g.gain.exponentialRampToValueAtTime(.0001,now+Math.max(.05,settings.decay*decayScale+settings.attack));osc.connect(g).connect(voice);osc.start(now);osc.stop(stop);});
-  }
-  guitar(freq,velocity){
-    const now=this.context.currentTime, length=Math.max(2,Math.floor(this.context.sampleRate/freq)), buffer=this.context.createBuffer(1,length,this.context.sampleRate), data=buffer.getChannelData(0);for(let i=0;i<length;i++)data[i]=Math.random()*2-1;
-    const source=this.context.createBufferSource(),filter=this.context.createBiquadFilter(),gain=this.context.createGain();source.buffer=buffer;source.loop=true;filter.type='lowpass';filter.frequency.value=800+settings.brightness*6500;source.connect(filter).connect(gain).connect(this.bus);const stop=this.envelope(gain,now,velocity,.65);source.start(now);source.stop(stop);
-  }
-  drums(freq,velocity,area){
-    const now=this.context.currentTime, gain=this.context.createGain(), osc=this.context.createOscillator();osc.type=area%3===2?'square':'sine';osc.frequency.setValueAtTime(freq*(area<2?.5:1),now);osc.frequency.exponentialRampToValueAtTime(Math.max(45,freq*.35),now+.18);osc.connect(gain).connect(this.bus);gain.gain.setValueAtTime(Math.max(.001,velocity),now);gain.gain.exponentialRampToValueAtTime(.0001,now+.12+settings.release*.35);osc.start(now);osc.stop(now+.18+settings.release*.35);
-    if(area%3!==0){const b=this.context.createBuffer(1,Math.floor(this.context.sampleRate*.14),this.context.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const n=this.context.createBufferSource(),f=this.context.createBiquadFilter(),ng=this.context.createGain();n.buffer=b;f.type='highpass';f.frequency.value=900+settings.brightness*5000;ng.gain.setValueAtTime(velocity*.35,now);ng.gain.exponentialRampToValueAtTime(.0001,now+.12);n.connect(f).connect(ng).connect(this.bus);n.start(now);}
-  }
-  play(note,velocity,area){this.update();const freq=noteFrequency(note,Number(settings.transpose));const v=Math.min(.95,Math.max(.08,velocity));if(settings.instrument==='steel_drum')this.steel(freq,v);else if(settings.instrument==='harpsichord')this.oscillatorVoice(freq,v,'sawtooth',[1,2,3,4],[.55,.22,.12,.06],.35);else if(settings.instrument==='piano')this.oscillatorVoice(freq,v,'triangle',[1,2,3.01],[.72,.20,.08],1.05);else if(settings.instrument==='guitar')this.guitar(freq,v);else this.drums(freq,v,area);}
+  update(){const t=this.context.currentTime;this.master.gain.setTargetAtTime(settings.masterVolume,t,.015);}
+  url(note,area){const query=new URLSearchParams({note,area:String(area),instrument:settings.instrument,transpose:String(settings.transpose),velocity:'1',volume:'1',brightness:String(settings.brightness),attack:String(settings.attack),decay:String(settings.decay),sustain:String(settings.sustain),release:String(settings.release),echo_mix:String(settings.echoMix),echo_delay:String(settings.echoDelay),echo_feedback:String(settings.echoFeedback)});return `/api/audio/note.wav?${query}`;}
+  async load(note,area){const url=this.url(note,area);if(this.buffers.has(url))return this.buffers.get(url);if(!this.loads.has(url))this.loads.set(url,fetch(url,{cache:'force-cache'}).then(response=>{if(!response.ok)throw new Error(`${response.status} ${response.statusText}`);return response.arrayBuffer();}).then(bytes=>this.context.decodeAudioData(bytes)).then(buffer=>{this.buffers.set(url,buffer);this.loads.delete(url);return buffer;}).catch(error=>{this.loads.delete(url);throw error;}));return this.loads.get(url);}
+  async prime(notes){await Promise.all(notes.map((note,area)=>this.load(note,area)));}
+  start(buffer,velocity){this.update();const source=this.context.createBufferSource(),gain=this.context.createGain();source.buffer=buffer;gain.gain.value=Math.min(.95,Math.max(.08,velocity));source.connect(gain).connect(this.master);source.start();return source;}
+  play(note,velocity,area){const url=this.url(note,area),buffer=this.buffers.get(url);if(buffer)return this.start(buffer,velocity);this.load(note,area).then(value=>this.start(value,velocity)).catch(error=>$('error').textContent=`UNO Q音声: ${error.message}`);}
 }
 
-async function ensureAudio(){if(!audio)audio=new AudioEngine();await audio.resume();audio.update();}
+async function ensureAudio(){if(!audio)audio=new AudioEngine();await audio.resume();audio.update();await audio.prime(settings.notes.slice(0,panelClassCount));}
+function scheduleAudioPrime(){if(!audio)return;if(audioPrimeTimer)clearTimeout(audioPrimeTimer);audioPrimeTimer=setTimeout(()=>audio.prime(settings.notes.slice(0,panelClassCount)).catch(error=>$('error').textContent=`UNO Q音声: ${error.message}`),180);}
 function outputValue(id,value){const el=$(id);if(el)el.value=value;}
 function renderSettings(){
   $('instrumentSelect').value=settings.instrument;
@@ -136,10 +103,10 @@ function updateLabels(){
 function updateGridNotes(){document.querySelectorAll('#hitGrid [data-class]').forEach(cell=>cell.querySelector('span').textContent=settings.notes[Number(cell.dataset.class)]);}
 function setupControls(){
   const options=noteOptions().map(note=>`<option value="${note}">${note}</option>`).join('');for(let i=0;i<panelClassCount;i++)$(`areaNote${i}`).innerHTML=options;
-  $('instrumentSelect').onchange=e=>{settings.instrument=e.target.value;saveSettings();};
-  for(const id of ['masterVolume','transpose','brightness','attack','decay','sustain','release','echoMix','echoDelay','echoFeedback','velocity','retriggerGuardMs']) $(id).oninput=e=>{settings[id]=id==='transpose'?Number.parseInt(e.target.value,10):Number(e.target.value);updateLabels();saveSettings();if(audio)audio.update();};
+  $('instrumentSelect').onchange=e=>{settings.instrument=e.target.value;saveSettings();scheduleAudioPrime();};
+  for(const id of ['masterVolume','transpose','brightness','attack','decay','sustain','release','echoMix','echoDelay','echoFeedback','velocity','retriggerGuardMs']) $(id).oninput=e=>{settings[id]=id==='transpose'?Number.parseInt(e.target.value,10):Number(e.target.value);updateLabels();saveSettings();if(audio)audio.update();if(id!=='masterVolume'&&id!=='velocity'&&id!=='retriggerGuardMs')scheduleAudioPrime();};
   $('retriggerGuardMs').onchange=()=>api('/api/inference/retrigger',{milliseconds:Number(settings.retriggerGuardMs)}).catch(error=>$('error').textContent=error.message);
-  for(let i=0;i<panelClassCount;i++)$(`areaNote${i}`).onchange=e=>{settings.notes[i]=e.target.value;updateGridNotes();saveSettings();};
+  for(let i=0;i<panelClassCount;i++)$(`areaNote${i}`).onchange=e=>{settings.notes[i]=e.target.value;updateGridNotes();saveSettings();scheduleAudioPrime();};
   const selectProfile=e=>{syncActiveProfile();settings.activeMappingProfileId=e.target.value;settings.notes=[...activeProfile().notes];renderSettings();saveSettings();};
   $('mappingProfileSelect').onchange=selectProfile;
   $('mappingProfileEditSelect').onchange=selectProfile;
@@ -164,7 +131,7 @@ function configurePanel(panel){
   const mapping=document.querySelector('.mapping-grid');
   mapping.innerHTML=Array.from({length:count},(_,i)=>`<label>エリア${i+1}<select id="areaNote${i}"></select></label>`).join('');
   const options=noteOptions().map(note=>`<option value="${note}">${note}</option>`).join('');
-  for(let i=0;i<count;i++){$(`areaNote${i}`).innerHTML=options;$(`areaNote${i}`).value=settings.notes[i];$(`areaNote${i}`).onchange=e=>{settings.notes[i]=e.target.value;updateGridNotes();saveSettings();};}
+  for(let i=0;i<count;i++){$(`areaNote${i}`).innerHTML=options;$(`areaNote${i}`).value=settings.notes[i];$(`areaNote${i}`).onchange=e=>{settings.notes[i]=e.target.value;updateGridNotes();saveSettings();scheduleAudioPrime();};}
   document.querySelectorAll('#hitGrid [data-class]').forEach(cell=>cell.onclick=async()=>{await ensureAudio();playArea(Number(cell.dataset.class),.8,true);});
   window.panelProfileUi?.applyPanel(panel);renderScores();saveSettings();
 }
@@ -249,9 +216,8 @@ async function inferenceLoop(){
   if(inferenceLoopRunning)return;inferenceLoopRunning=true;
   while(inferenceLoopRunning){
     if(!performanceEnabled){await new Promise(resolve=>setTimeout(resolve,50));continue;}
-    try{const result=await api('/api/ai/latest');if(result.sequence!==undefined&&result.sequence!==lastPlayedSequence){lastPlayedSequence=result.sequence;const area=Number(result.predicted_class),score=Math.max(...result.outputs.map(Number));renderScores(result.outputs);playArea(area,score,false);$('error').textContent='';}}
-    catch(error){$('error').textContent=error.message;}
-    await new Promise(resolve=>setTimeout(resolve,20));
+    try{const after=lastPlayedSequence===null?'':String(lastPlayedSequence),result=await api(`/api/ai/wait?after=${encodeURIComponent(after)}&timeout=1.0`);if(result.sequence!==undefined&&result.sequence!==lastPlayedSequence){lastPlayedSequence=result.sequence;const area=Number(result.predicted_class),score=Math.max(...result.outputs.map(Number));renderScores(result.outputs);playArea(area,score,false);$('error').textContent='';}}
+    catch(error){$('error').textContent=error.message;await new Promise(resolve=>setTimeout(resolve,50));}
   }
 }
 async function startPerformance(){try{await ensureAudio();const current=await api('/api/status');lastPlayedSequence=current.latest_ai?current.latest_ai.sequence:null;await api('/api/inference/retrigger',{milliseconds:Number(settings.retriggerGuardMs)});await api('/api/inference/start',{mode:'instrument'});performanceEnabled=true;$('instrumentStatus').textContent='高速演奏中です。アクリル板を連続してたたけます。';$('instrumentStatus').classList.add('playing');$('error').textContent='';await refreshStatus();}catch(error){$('error').textContent=error.message;}}

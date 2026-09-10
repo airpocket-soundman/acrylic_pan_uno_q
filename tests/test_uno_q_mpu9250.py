@@ -11,11 +11,18 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "uno_q_app" / "python"))
 from mpu9250_models import FEATURE_COUNT, ModelSuite, extract_features  # noqa: E402
+from position_model import PositionModel  # noqa: E402
 from training_manager import TrainingManager  # noqa: E402
 
 MODEL_PATH = ROOT / "uno_q_app" / "python" / "mpu9250_models.npz"
 METADATA_PATH = ROOT / "uno_q_app" / "python" / "mpu9250_model_metadata.json"
 SEED_PATH = ROOT / "uno_q_app" / "python" / "mpu9250_training_seed.npz"
+POSITION_ROOT = ROOT / "data" / "position_model_400x300"
+
+
+def position_model():
+    return PositionModel(POSITION_ROOT / "model.npz", POSITION_ROOT / "parity_cases.npz",
+                         POSITION_ROOT / "model_metadata.json")
 
 
 class UnoQMpu9250Tests(unittest.TestCase):
@@ -44,10 +51,11 @@ class UnoQMpu9250Tests(unittest.TestCase):
             self.assertIn(f"xy_w_{index}", suite.arrays)
             self.assertIn(f"xy_b_{index}", suite.arrays)
         with tempfile.TemporaryDirectory() as directory:
-            manager = TrainingManager(Path(directory), SEED_PATH, suite)
+            model = position_model()
+            manager = TrainingManager(Path(directory), model)
             self.assertEqual(len(manager.targets), 60)
             self.assertEqual({(item["x_mm"], item["y_mm"]) for item in manager.targets},
-                             {tuple(map(int, point)) for point in suite.arrays["support_xy_mm"]})
+                             {tuple(map(int, point)) for point in model.support})
             state = manager.start(2, "all60")
             self.assertEqual(state["total_samples"], 120)
             self.assertEqual(state["samples_per_class"], 10)
@@ -57,8 +65,8 @@ class UnoQMpu9250Tests(unittest.TestCase):
         for name in ("index.html", "collector.html", "position.html", "instrument.html", "instrument-probability.html"):
             self.assertTrue((static / name).is_file())
         collector = (static / "collector.html").read_text(encoding="utf-8")
-        self.assertIn("MPU9250・±16 g・4 kHz・80点 / 20 ms", collector)
-        self.assertIn("MPU9250 採取済みデータ", collector)
+        self.assertIn("KX134-1211・±32 g・25.6 kHz・512点 / 20 ms", collector)
+        self.assertIn("KX134 採取済みデータ", collector)
         self.assertNotIn("trainingStart", collector)
         self.assertNotIn("sync_train_mpu9250", collector)
         self.assertNotIn("25.6 kHz・2,048点", collector)
@@ -88,15 +96,13 @@ class UnoQMpu9250Tests(unittest.TestCase):
         self.assertIn("acrylicPanPcCameraServer", (static / "camera-embed.js").read_text(encoding="utf-8"))
 
     def test_training_library_lists_loads_and_deletes_jsonl_events(self):
-        suite = ModelSuite(MODEL_PATH, METADATA_PATH)
         with tempfile.TemporaryDirectory() as directory:
-            manager = TrainingManager(Path(directory), SEED_PATH, suite)
+            manager = TrainingManager(Path(directory), position_model())
             manager.start(1, "center")
             stored = manager.record({
-                "sequence": 7, "sample_rate_hz": 4000, "trigger_index": 10,
+                "sequence": 7, "sample_rate_hz": 25600, "trigger_index": 64,
                 "peak_abs": 2400, "irq_count": 1,
-                "x": [0] * 80, "y": [0] * 80,
-                "z": [index * 10 for index in range(80)],
+                "z": [index * 10 for index in range(512)],
             })
             self.assertIsNotNone(stored)
             manager.stop()
@@ -105,28 +111,29 @@ class UnoQMpu9250Tests(unittest.TestCase):
             events = manager.list_events(manager.SESSION_ID)["events"]
             self.assertEqual(events[0]["sequence"], 7)
             payload = manager.load_event(manager.SESSION_ID, 1)
-            self.assertEqual(len(payload["samples"]), 80)
-            self.assertEqual(len(payload["frequency_hz"]), 41)
+            self.assertEqual(len(payload["samples"]), 512)
+            self.assertEqual(len(payload["frequency_hz"]), 257)
             self.assertEqual(payload["stored"]["class_id"], 0)
             self.assertEqual(manager.delete_event(manager.SESSION_ID, 1)["remaining"], 0)
             self.assertEqual(manager.list_sessions()["sessions"], [])
 
     def test_uno_q_retrigger_guard_matches_original_application_contract(self):
         sketch = (ROOT / "uno_q_app" / "sketch" / "sketch.ino").read_text(encoding="utf-8")
+        capture = (ROOT / "uno_q_app" / "sketch" / "apan_capture.cpp").read_text(encoding="utf-8")
         server = (ROOT / "uno_q_app" / "python" / "web_server.py").read_text(encoding="utf-8")
         self.assertIn('Bridge.provide("set_retrigger_guard"', sketch)
         self.assertIn("CONFIRMATION_THRESHOLD", sketch)
-        self.assertIn("candidateConfirmed", sketch)
-        self.assertIn("differenceMagnitude(rawZ, previousZ) >= jerkThreshold", sketch)
-        self.assertIn("magnitude16(rawZ) >= levelThreshold", sketch)
+        self.assertIn("candidateConfirmed", capture)
+        self.assertIn("difference >= jerkThreshold_", capture)
+        self.assertIn("magnitude(sample) >= levelThreshold_", capture)
         self.assertIn("self.set_retrigger_guard", server)
-        self.assertIn("confirmationThreshold", sketch)
+        self.assertIn("confirmationThreshold", capture)
         self.assertIn('self.set_sensor_thresholds("collection")', server)
         self.assertIn('self.set_sensor_thresholds("inference")', server)
         self.assertIn("self.training.load_event", server)
         self.assertIn("self.training.delete_event", server)
-        self.assertIn("readyCount != consumedIrqCount", sketch)
-        self.assertIn("missedDataReady += elapsed - 1", sketch)
+        self.assertIn("DWT->CYCCNT", sketch)
+        self.assertIn("missedDataReady += lateCycles / samplePeriodCycles", sketch)
         self.assertNotIn("SAMPLE_PERIOD_US", sketch)
 
 

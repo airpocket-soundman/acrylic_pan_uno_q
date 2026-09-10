@@ -8,10 +8,6 @@ from pathlib import Path
 
 import numpy as np
 
-from mpu9250_models import (ModelSuite, copy_xy_mlp, extract_features,
-                            fine_tune_xy_mlp, save_model, train_arrays)
-
-
 PANEL = {"id": "400x300x5", "label": "400 × 300 × 5 mm（12クラス）",
          "width_mm": 400, "height_mm": 300, "thickness_mm": 5,
          "columns": 4, "rows": 3, "class_count": 12,
@@ -37,14 +33,13 @@ def targets_60(support_xy_mm: np.ndarray) -> list[dict]:
 
 
 class TrainingManager:
-    SESSION_ID = "mpu9250-training"
+    SESSION_ID = "kx134-training"
 
-    def __init__(self, data_root: Path, seed_path: Path, model: ModelSuite):
+    def __init__(self, data_root: Path, model):
         self.data_root = Path(data_root)
-        self.seed_path = Path(seed_path)
         self.model = model
-        self.events_path = self.data_root / "training" / "mpu9250_events.jsonl"
-        self.targets = targets_60(model.arrays["support_xy_mm"])
+        self.events_path = self.data_root / "training" / "kx134_events.jsonl"
+        self.targets = targets_60(model.support)
         self._lock = threading.RLock()
         self.active = False
         self.finished = False
@@ -184,18 +179,18 @@ class TrainingManager:
                 raise ValueError("unknown training event")
             row = rows[index - 1]
         samples = np.asarray(row["z"], dtype=np.float64)
-        sample_rate = int(row.get("sample_rate_hz", 4000))
+        sample_rate = int(row.get("sample_rate_hz", 25600))
         windowed = (samples - np.mean(samples)) * np.hanning(len(samples))
         magnitude = np.abs(np.fft.rfft(windowed))
         magnitude_db = 20.0 * np.log10(np.maximum(magnitude, 1e-9))
         summary = self._event_summary(row, index)
         return {
-            "sequence": summary["sequence"], "source": "mpu9250-training-library",
+            "sequence": summary["sequence"], "source": "kx134-training-library",
             "samples": samples.astype(int).tolist(),
             "time_ms": (np.arange(len(samples)) * 1000.0 / sample_rate).tolist(),
             "frequency_hz": np.fft.rfftfreq(len(samples), 1.0 / sample_rate).tolist(),
             "magnitude_db": magnitude_db.tolist(), "sample_rate_hz": sample_rate,
-            "trigger_time_ms": float(row.get("trigger_index", 10)) * 1000.0 / sample_rate,
+            "trigger_time_ms": float(row.get("trigger_index", 64)) * 1000.0 / sample_rate,
             "peak_abs": summary["peak_abs"],
             "stored": {"session_id": session_id, "index": index,
                        "class_id": summary["class_id"]},
@@ -259,46 +254,4 @@ class TrainingManager:
             }
 
     def start_training(self) -> dict:
-        with self._lock:
-            if self.training["active"]:
-                raise ValueError("training is already active")
-            self.training = {"active": True, "last_error": None, "last_report": None}
-        threading.Thread(target=self._train, name="mpu9250-train", daemon=True).start()
-        return dict(self.training)
-
-    def _train(self) -> None:
-        try:
-            with np.load(self.seed_path, allow_pickle=False) as seed:
-                features = [np.asarray(seed["features"], dtype=np.float32)]
-                labels = [np.asarray(seed["labels"], dtype=np.uint8)]
-                coordinates = [np.asarray(seed["xy_mm"], dtype=np.float32)]
-                support = np.asarray(seed["support_xy_mm"], dtype=np.float32)
-            rows = self._read_rows()
-            if rows:
-                features.append(np.stack([extract_features(row["z"]) for row in rows]))
-                labels.append(np.asarray([row["class_id"] for row in rows], dtype=np.uint8))
-                coordinates.append(np.asarray([[row["target_x_mm"], row["target_y_mm"]] for row in rows], dtype=np.float32))
-            x, y, xy = np.concatenate(features), np.concatenate(labels), np.concatenate(coordinates)
-            arrays = train_arrays(x, y, xy, support)
-            copy_xy_mlp(self.model.arrays, arrays)
-            if rows:
-                fresh_count = len(rows)
-                rehearsal_count = min(1024, len(x) - fresh_count)
-                rehearsal = np.linspace(0, len(x) - fresh_count - 1,
-                                        rehearsal_count, dtype=np.int64)
-                tune_indices = np.concatenate((rehearsal,
-                                               np.arange(len(x) - fresh_count, len(x))))
-                fine_tune_xy_mlp(arrays, x[tune_indices], xy[tune_indices])
-            save_model(self.model.model_path, arrays)
-            metadata = dict(self.model.metadata)
-            metadata.update({"trained_on_uno_q": True, "training_event_count": int(len(x)),
-                             "fresh_mpu9250_event_count": len(rows), "trained_at_unix_ns": time.time_ns()})
-            self.model.metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-            self.model.reload()
-            report = {"training_event_count": int(len(x)), "fresh_mpu9250_event_count": len(rows),
-                      "model": metadata["model"]}
-            with self._lock:
-                self.training = {"active": False, "last_error": None, "last_report": report}
-        except Exception as error:
-            with self._lock:
-                self.training = {"active": False, "last_error": str(error), "last_report": None}
+        raise ValueError("再学習はWeb UIから自動実行しません。採取データを保護し、PC側で明示的に実行してください")

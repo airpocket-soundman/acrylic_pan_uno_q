@@ -1,0 +1,6 @@
+name: KX134 SPI Diagnostic
+icon: "🔎"
+description: KX134-1211 SPI identity and acceleration check on UNO Q
+
+bricks: []
+ports: []

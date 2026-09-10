@@ -44,17 +44,17 @@ if ($LASTEXITCODE -ne 0) { throw "Failed to upload the App." }
 
 $exists = (& $adb @adbArgs shell "if test -d '$remoteApp'; then echo yes; else echo no; fi").Trim()
 if ($exists -eq "yes") {
-    & $adb @adbArgs shell arduino-app-cli app stop $remoteApp | Out-Null
+    & $adb @adbArgs shell "TMPDIR=/tmp arduino-app-cli app stop '$remoteApp'" | Out-Null
     & $adb @adbArgs push "$staging\." "$remoteApp/"
     if ($LASTEXITCODE -ne 0) { throw "Failed to update the existing Arduino App files." }
 } else {
-    & $adb @adbArgs shell "arduino-app-cli app new acrylic-pan-dummy --from-app '$remoteStage' --format json"
+    & $adb @adbArgs shell "TMPDIR=/tmp arduino-app-cli app new acrylic-pan-dummy --from-app '$remoteStage' --format json"
     if ($LASTEXITCODE -ne 0) { throw "Failed to create the Arduino App." }
 }
-& $adb @adbArgs shell env -u TMPDIR arduino-app-cli app start $remoteApp --format json
+& $adb @adbArgs shell "TMPDIR=/tmp arduino-app-cli app start '$remoteApp' --format json"
 if ($LASTEXITCODE -ne 0) { throw "Failed to start the Arduino App." }
 
 if (-not $KeepStaging) { Remove-Item -LiteralPath $staging -Recurse -Force }
 Write-Host "Acrylic Pan XY Instrument App deployed."
-Write-Host "Web UI: http://192.168.50.160:8765/"
-Write-Host "Logs: adb shell env -u TMPDIR arduino-app-cli app logs /home/arduino/ArduinoApps/acrylic-pan-dummy"
+Write-Host "Web UI: http://<UNO-Q-IP>:8765/"
+Write-Host "Logs: adb shell 'TMPDIR=/tmp arduino-app-cli app logs /home/arduino/ArduinoApps/acrylic-pan-dummy'"

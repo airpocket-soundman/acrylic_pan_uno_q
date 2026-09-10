@@ -107,7 +107,8 @@ UNO Q App Lab実装は、現在 `APAN_DUMMY_MODE=1` でセンサアクセスを�
 旧評価キットの14ピンIDCコネクタは、D10-D13のSPI、D2/D3の割り込み予約、
 3.3 VおよびGNDへ展開します。KX134-1211は3.3 Vで使用し、UNO QのJSPIにある
 5 V端子へは接続しません。全14ピンの配置、CN1の向き、変換アダプタ仕様は
-[`docs/uno-q-sensor-wiring.md`](docs/uno-q-sensor-wiring.md) を参照してください。
+Solist AI用KX134ブレークアウトボードは[`docs/uno-q-sensor-wiring.md`](docs/uno-q-sensor-wiring.md)、
+KX132-1211-EVK-001は[`docs/kx132-1211-evk-wiring.md`](docs/kx132-1211-evk-wiring.md)を参照してください。
 
 ## 起動
 

@@ -3,11 +3,11 @@
   <style>
     text{font-family:Arial,Helvetica,sans-serif;fill:#172033}.title{font-size:38px;font-weight:700}.sub{font-size:20px;fill:#526079}.box{fill:#fff;stroke:#2c5f9e;stroke-width:3}.head{font-size:27px;font-weight:700}.pin{font-size:20px}.warn{font-size:24px;font-weight:700;fill:#b32323}.wire{fill:none;stroke-width:5}.pwr{stroke:#df3b37}.gnd{stroke:#272b33}.sig{stroke:#18836b}.irq{stroke:#8b5fbf}.nc{stroke:#9ba4b0;stroke-dasharray:9 8}
   </style>
-  <text x="700" y="58" text-anchor="middle" class="title">KX134 Sensor Board to Arduino UNO Q</text>
+  <text x="700" y="58" text-anchor="middle" class="title">Solist AI KX134 Breakout Board to Arduino UNO Q</text>
   <text x="700" y="92" text-anchor="middle" class="sub">3.3 V SPI wiring through the original 2x7 keyed IDC cable</text>
 
   <rect x="65" y="135" width="430" height="650" rx="18" class="box"/>
-  <text x="280" y="180" text-anchor="middle" class="head">KX134 board CN1</text>
+  <text x="280" y="180" text-anchor="middle" class="head">Solist AI KX134 breakout CN1</text>
   <text x="280" y="212" text-anchor="middle" class="sub">front view, component side</text>
 
   <rect x="905" y="135" width="430" height="650" rx="18" class="box"/>

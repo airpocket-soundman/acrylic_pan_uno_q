@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <rect width="1600" height="1200" fill="#f7f9fc"/>
+  <style>
+    text{font-family:Arial,"Noto Sans JP",sans-serif;fill:#172033}.title{font-size:40px;font-weight:700}.sub{font-size:20px;fill:#526079}.box{fill:#fff;stroke:#2c5f9e;stroke-width:3}.head{font-size:27px;font-weight:700}.pin{font-size:19px}.small{font-size:16px;fill:#526079}.tiny{font-size:14px}.connector text{fill:#fff}.warn{font-size:22px;font-weight:700;fill:#b32323}.wire{fill:none;stroke-width:5;stroke-linecap:round}.pwr{stroke:#df3b37}.gnd{stroke:#272b33}.sck{stroke:#2877c7}.miso{stroke:#15936f}.mosi{stroke:#e27b23}.cs{stroke:#854fc6}.irq{stroke:#c08c00}.irq2{stroke:#008da3}.nc{stroke:#9ba4b0;stroke-dasharray:9 8}.pad{stroke:#fff;stroke-width:2}
+  </style>
+  <text x="800" y="58" text-anchor="middle" class="title">KX132-1211-EVK-001 to Arduino UNO Q</text>
+  <text x="800" y="92" text-anchor="middle" class="sub">3.3 V, 4-wire SPI - ROHM breakout/evaluation board J1 2x7 header</text>
+
+  <rect x="55" y="130" width="500" height="690" rx="18" class="box"/>
+  <text x="305" y="175" text-anchor="middle" class="head">KX132-1211-EVK-001 board</text>
+  <text x="305" y="207" text-anchor="middle" class="sub">J1 breakout header - not the bare IC pinout</text>
+
+  <rect x="1045" y="130" width="500" height="690" rx="18" class="box"/>
+  <text x="1295" y="175" text-anchor="middle" class="head">Arduino UNO Q</text>
+  <text x="1295" y="207" text-anchor="middle" class="sub">STM32U585 / 3.3 V header domain</text>
+
+  <g class="pin">
+    <text x="90" y="270">J1-1  VDD</text>
+    <text x="90" y="330">J1-6  IO_VDD</text>
+    <text x="90" y="390">J1-8  GND</text>
+    <text x="90" y="450">J1-2  nCS</text>
+    <text x="90" y="510">J1-5  SCLK / SCL</text>
+    <text x="90" y="570">J1-7  SDI / SDA</text>
+    <text x="90" y="630">J1-9  SDO / ADDR</text>
+    <text x="90" y="690">J1-11  INT1 / DRDY</text>
+    <text x="90" y="750">J1-12  INT2 (optional)</text>
+    <text x="90" y="798" class="small">J1-3, 4, 10, 13, 14: leave open</text>
+
+    <text x="1210" y="270">3.3 V</text>
+    <text x="1210" y="330">3.3 V</text>
+    <text x="1210" y="390">GND</text>
+    <text x="1210" y="450">D10 / SS (PB9)</text>
+    <text x="1210" y="510">D13 / SCK (PB13)</text>
+    <text x="1210" y="570">D11 / COPI (PB15)</text>
+    <text x="1210" y="630">D12 / CIPO (PB14)</text>
+    <text x="1210" y="690">D2 (PB3)</text>
+    <text x="1210" y="750">D3 (PB0)</text>
+    <text x="1210" y="798" class="small">NC: do not connect</text>
+  </g>
+
+  <path d="M555 263 H1045" class="wire pwr"/>
+  <path d="M555 323 H1045" class="wire pwr"/>
+  <path d="M555 383 H1045" class="wire gnd"/>
+  <path d="M555 443 H1045" class="wire cs"/>
+  <path d="M555 503 H1045" class="wire sck"/>
+  <path d="M555 563 H1045" class="wire mosi"/>
+  <path d="M555 623 H1045" class="wire miso"/>
+  <path d="M555 683 H1045" class="wire irq"/>
+  <path d="M555 743 H1045" class="wire irq2"/>
+  <path d="M555 791 H1045" class="wire nc"/>
+
+  <g transform="translate(80 850)">
+    <text x="0" y="0" class="head">J1 physical pin order</text>
+    <text x="0" y="28" class="small">Sensor and components above; view the board from the component side.</text>
+    <rect x="0" y="48" width="780" height="218" rx="8" fill="#102733" stroke="#557078" stroke-width="3"/>
+    <g class="tiny connector" text-anchor="middle" fill="#fff">
+      <g transform="translate(55 82)"><circle r="17" fill="#df3b37" class="pad"/><text y="5">1</text><text y="42">VDD</text></g>
+      <g transform="translate(165 82)"><circle r="17" fill="#9ba4b0" class="pad"/><text y="5">3</text><text y="42">X_OUT</text></g>
+      <g transform="translate(275 82)"><circle r="17" fill="#2877c7" class="pad"/><text y="5">5</text><text y="42">SCLK</text></g>
+      <g transform="translate(385 82)"><circle r="17" fill="#e27b23" class="pad"/><text y="5">7</text><text y="42">SDI</text></g>
+      <g transform="translate(495 82)"><circle r="17" fill="#15936f" class="pad"/><text y="5">9</text><text y="42">SDO</text></g>
+      <g transform="translate(605 82)"><circle r="17" fill="#c08c00" class="pad"/><text y="5">11</text><text y="42">INT1</text></g>
+      <g transform="translate(715 82)"><circle r="17" fill="#9ba4b0" class="pad"/><text y="5">13</text><text y="42">nRES</text></g>
+      <g transform="translate(55 174)"><circle r="17" fill="#854fc6" class="pad"/><text y="5">2</text><text y="42">nCS</text></g>
+      <g transform="translate(165 174)"><circle r="17" fill="#9ba4b0" class="pad"/><text y="5">4</text><text y="42">Y_OUT</text></g>
+      <g transform="translate(275 174)"><circle r="17" fill="#df3b37" class="pad"/><text y="5">6</text><text y="42">IO_VDD</text></g>
+      <g transform="translate(385 174)"><circle r="17" fill="#272b33" class="pad"/><text y="5">8</text><text y="42">GND</text></g>
+      <g transform="translate(495 174)"><circle r="17" fill="#9ba4b0" class="pad"/><text y="5">10</text><text y="42">TRIG</text></g>
+      <g transform="translate(605 174)"><circle r="17" fill="#008da3" class="pad"/><text y="5">12</text><text y="42">INT2</text></g>
+      <g transform="translate(715 174)"><circle r="17" fill="#9ba4b0" class="pad"/><text y="5">14</text><text y="42">Z_OUT</text></g>
+    </g>
+  </g>
+
+  <rect x="910" y="872" width="610" height="92" rx="12" fill="#fff0f0" stroke="#d74040" stroke-width="2"/>
+  <text x="1215" y="907" text-anchor="middle" class="warn">3.3 V ONLY - never use the 5 V pin</text>
+  <text x="1215" y="938" text-anchor="middle" class="small">Solist AI KX134 breakout-board CN1 numbering is different.</text>
+  <text x="800" y="1170" text-anchor="middle" class="small">WHO_AM_I = 0x3D. Verify J1 pin 1 marking and continuity before power-on.</text>
+</svg>

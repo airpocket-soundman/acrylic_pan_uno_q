@@ -1,0 +1,145 @@
+{
+  "selected": "acrylic_pan_xy_gpu_fp16.tflite",
+  "reason": "FP32-equivalent held-out accuracy with half-size weights",
+  "models": {
+    "fp32": {
+      "file": "acrylic_pan_xy_gpu_fp32.tflite",
+      "bytes": 4337396,
+      "sha256": "37b17ea405fc029facd7cfaa64c9f149c2623c19bae8c08c4bf8dfd263faaa40",
+      "input": {
+        "name": "waveform_448x3",
+        "shape": [
+          1,
+          448,
+          1,
+          3
+        ],
+        "dtype": "float32"
+      },
+      "outputs": [
+        {
+          "name": "Identity",
+          "shape": [
+            1,
+            60
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "Identity_1",
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float32"
+        }
+      ],
+      "operators": [
+        "CONV_2D",
+        "CONV_2D",
+        "CONV_2D",
+        "CONV_2D",
+        "RESHAPE",
+        "FULLY_CONNECTED",
+        "FULLY_CONNECTED",
+        "FULLY_CONNECTED",
+        "LOGISTIC",
+        "FULLY_CONNECTED",
+        "SOFTMAX"
+      ]
+    },
+    "fp16": {
+      "file": "acrylic_pan_xy_gpu_fp16.tflite",
+      "bytes": 2174572,
+      "sha256": "64db6dcf0298a5ac5f851787bb5b13bf30dd245f9f4f3e0cffdb45b87acba612",
+      "input": {
+        "name": "waveform_448x3",
+        "shape": [
+          1,
+          448,
+          1,
+          3
+        ],
+        "dtype": "float32"
+      },
+      "outputs": [
+        {
+          "name": "Identity",
+          "shape": [
+            1,
+            60
+          ],
+          "dtype": "float32"
+        },
+        {
+          "name": "Identity_1",
+          "shape": [
+            1,
+            2
+          ],
+          "dtype": "float32"
+        }
+      ],
+      "operators": [
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "DEQUANTIZE",
+        "CONV_2D",
+        "CONV_2D",
+        "CONV_2D",
+        "CONV_2D",
+        "RESHAPE",
+        "FULLY_CONNECTED",
+        "FULLY_CONNECTED",
+        "FULLY_CONNECTED",
+        "LOGISTIC",
+        "FULLY_CONNECTED",
+        "SOFTMAX"
+      ]
+    }
+  },
+  "test": {
+    "gpu_fp32": {
+      "sample_count": 1907,
+      "position_top1_accuracy": 0.9795490298898794,
+      "area_accuracy_12class": 0.9884635553224961,
+      "nll": 0.13703714311122894,
+      "brier_score": 0.03028116342496208,
+      "ece": 0.009276510378923054,
+      "direct_xy_mean_mm": 13.994373321533203,
+      "direct_xy_median_mm": 10.495036125183105,
+      "direct_xy_p90_mm": 26.277774810791016,
+      "direct_xy_p95_mm": 35.747989654541016,
+      "expected_xy_mean_mm": 1.8589973449707031,
+      "map_xy_mean_mm": 1.9076008796691895
+    },
+    "gpu_fp16": {
+      "sample_count": 1907,
+      "position_top1_accuracy": 0.9795490298898794,
+      "area_accuracy_12class": 0.9884635553224961,
+      "nll": 0.13703060150146484,
+      "brier_score": 0.030279549206963203,
+      "ece": 0.00927495420385415,
+      "direct_xy_mean_mm": 13.99766731262207,
+      "direct_xy_median_mm": 10.485939979553223,
+      "direct_xy_p90_mm": 26.282840728759766,
+      "direct_xy_p95_mm": 35.72100067138672,
+      "expected_xy_mean_mm": 1.8588706254959106,
+      "map_xy_mean_mm": 1.9076008796691895
+    }
+  },
+  "delegate_status": "requires verification on UNO Q; PC conversion does not prove OpenCL delegation"
+}

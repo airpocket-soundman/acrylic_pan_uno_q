@@ -18,6 +18,7 @@ Last updated: 2026-09-11 (JST)
 - The probability-instrument screen is fixed to the 400 x 300 mm panel, internal KX134 SPI connection, and UNO Q Linux position model. Those three selectors are retained only as hidden compatibility nodes for the shared browser code and are not user-facing controls.
 - NPU execution was requested, but the current UNO Q Debian image exposes the Adreno 702 through Mesa OpenCL and does not contain QNN/SNPE libraries or a FastRPC/NPU device node. The deployed model therefore remains NumPy CPU inference and reports `inference_accelerator: cpu_numpy`; do not label it as NPU execution. Moving it to Hexagon requires a supported Qualcomm runtime/toolchain for QRB2210, model conversion, parity validation, and deployment support not present in the current image. GPU/OpenCL is the available hardware-acceleration fallback if NPU access remains unavailable.
 - CPU向けとGPU向けに別々に最適化した次期モデルは、元のKX134実測データが保存されている別開発環境で学習・変換する。UNO Qが接続されていない環境では精度評価とTFLite parity確認までを行い、実際のCPU/GPU delegate、遅延、負荷、カメラ同時動作はこのセカンダリ環境で検証する。入出力契約、成果物、合否条件は [UNO Q CPU/GPU向け座標推論モデル要件](uno-q-cpu-gpu-model-requirements.md) を参照する。
+- CPU/GPU候補の再学習は完了した。成果物は `uno_q_model_candidates/`、再生成スクリプトは `scripts/train_uno_q_cpu_gpu_models.py`。11セッション7,132打点をセッション単位で学習4,745／検証480／独立テスト1,907へ分割した。CPU採用候補は動的量子化MLP（182,392 bytes、60点96.70%、12エリア98.69%、MAP平均2.73 mm）、GPU採用候補はFP16 Conv2D（2,174,572 bytes、60点97.95%、12エリア98.85%、MAP平均1.91 mm）。INT8 CPU版は精度・parity低下のため不採用。GPU delegateでの実行可否と速度はUNO Q実機で未確認。
 - Both instrument pages preload the active notes from `/api/audio/note.wav`; generated WAV data is cached on the UNO Q and in the browser.
 - Inference delivery uses a blocking condition/long-poll endpoint instead of fixed-interval polling.
 - The MCU sends a captured waveform as eight packed 64-sample chunks instead of 512 individual Bridge notifications.
@@ -48,7 +49,7 @@ Last updated: 2026-09-11 (JST)
 4. Collect native KX134 training sessions over the full 400 x 300 panel, then retrain and validate the 12-area, 60-position probability/pseudo-XY, and direct-XY models on the PC when explicitly requested.
 5. Compare predicted panel, maximum-probability panel, graph, and heat-map overlay against the new native KX134 validation set. They now share the same 60-position distribution, but accuracy still depends on native training data.
 6. Connect the ordered externally powered USB-C hub and UVC camera, verify USB host negotiation and the port-4912 camera preview, then check the overlay alignment. Camera code is prepared but cannot be validated without that hardware.
-7. Receive the CPU-optimized and GPU-optimized TFLite candidates from the original development environment, install the required UNO Q runtime, and execute the parity/performance/camera-concurrency acceptance tests defined in `docs/uno-q-cpu-gpu-model-requirements.md`.
+7. Install the required UNO Q TFLite/LiteRT runtime, deploy the generated CPU dynamic and GPU FP16 candidates, and execute the parity/performance/camera-concurrency acceptance tests defined in `docs/uno-q-cpu-gpu-model-requirements.md`. Confirm from delegate logs that the GPU candidate is actually delegated rather than silently falling back to CPU.
 
 ## Resume checklist
 

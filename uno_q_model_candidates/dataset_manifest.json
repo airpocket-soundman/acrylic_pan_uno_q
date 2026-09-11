@@ -1,0 +1,49 @@
+{
+  "dataset_sha256": "046c7bdf15dec5d5d543a822bad7e40d8144522d0b59687668e46dba875bc37c",
+  "sessions": [
+    {
+      "session_id": "20260720_215533_aa9943ae",
+      "event_count": 589
+    },
+    {
+      "session_id": "20260720_220935_bd12a70b",
+      "event_count": 556
+    },
+    {
+      "session_id": "20260821_215225_8f38a3e4",
+      "event_count": 600
+    },
+    {
+      "session_id": "20260821_221547_4c753402",
+      "event_count": 600
+    },
+    {
+      "session_id": "20260823_081435_223491a5",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_082825_9374f169",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_083716_e0336d95",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_084554_6d26bd22",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_102330_ae4338bd",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_103846_18384ce0",
+      "event_count": 480
+    },
+    {
+      "session_id": "20260823_104754_2553f5d8",
+      "event_count": 1907
+    }
+  ]
+}

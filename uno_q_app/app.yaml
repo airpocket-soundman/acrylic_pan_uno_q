@@ -2,6 +2,10 @@ name: Acrylic Pan XY Instrument
 icon: "🥁"
 description: KX134 25.6 kHz acquisition, 60-position probability and XY inference, heatmap and instrument UI
 
-bricks: []
+bricks:
+  # The official UNO Q camera brick owns the UVC device on the Linux MPU and
+  # publishes its board-local preview at port 4912 (/embed).
+  - arduino:video_object_detection:
+      model: face-detection
 ports:
   - 8765

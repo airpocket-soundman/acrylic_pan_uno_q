@@ -14,7 +14,8 @@ let audioPrimeTimer = null;
 let hitClearTimer = null;
 let cameraStream = null;
 let panelClassCount = 8;
-const CAMERA_STORAGE_KEY = 'acrylicPanCameraDevice';
+const CAMERA_STORAGE_KEY = 'acrylicPanUnoQCameraStreamUrl';
+const DEFAULT_CAMERA_STREAM = `${window.location.protocol}//${window.location.hostname}:4912/embed`;
 
 async function api(path, body) {
   const options = body === undefined ? {} : {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)};
@@ -136,57 +137,29 @@ function configurePanel(panel){
   window.panelProfileUi?.applyPanel(panel);renderScores();saveSettings();
 }
 
-function cameraErrorMessage(error){
-  if(error&&error.name==='NotAllowedError')return 'カメラの使用が許可されていません。ブラウザのカメラ権限を確認してください。';
-  if(error&&error.name==='NotFoundError')return '使用できるUSBカメラが見つかりません。';
-  if(error&&error.name==='NotReadableError')return 'カメラを開始できません。他のアプリが使用していないか確認してください。';
-  return `カメラを開始できません: ${error&&error.message?error.message:String(error)}`;
-}
 function releaseCamera(){
-  if(cameraStream)cameraStream.getTracks().forEach(track=>track.stop());
-  cameraStream=null;$('usbCamera').srcObject=null;$('cameraPlaceholder').hidden=false;
+  cameraStream=null;$('usbCamera').removeAttribute('src');$('cameraPlaceholder').hidden=false;
   $('cameraStart').disabled=false;$('cameraStop').disabled=true;$('cameraState').classList.remove('is-running');
 }
 function stopCamera(){releaseCamera();$('cameraState').textContent='停止中';}
-async function refreshCameras(preferredId=''){
-  const select=$('cameraDevice');
-  if(!navigator.mediaDevices||!navigator.mediaDevices.enumerateDevices){
-    select.replaceChildren(new Option('このブラウザでは利用できません',''));select.disabled=true;$('cameraStart').disabled=true;$('cameraState').textContent='非対応';return [];
-  }
-  const devices=(await navigator.mediaDevices.enumerateDevices()).filter(device=>device.kind==='videoinput');
-  const activeId=cameraStream?.getVideoTracks()[0]?.getSettings().deviceId||'';
-  const savedId=localStorage.getItem(CAMERA_STORAGE_KEY)||'';
-  const current=preferredId||activeId||select.value||savedId;
-  select.replaceChildren(...(devices.length?devices.map((device,index)=>new Option(device.label||`USBカメラ ${index+1}`,device.deviceId)):[new Option('USBカメラが見つかりません','')]));
-  if(devices.some(device=>device.deviceId===current))select.value=current;
-  select.disabled=!devices.length;$('cameraStart').disabled=!devices.length||Boolean(cameraStream);
-  if(!devices.length&&!cameraStream)$('cameraState').textContent='未検出';
-  return devices;
-}
 async function startCamera(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('このブラウザはカメラ入力に対応していません。');
-  const selectedId=$('cameraDevice').value;
   releaseCamera();$('cameraState').textContent='接続中…';
-  const video={width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}};
-  if(selectedId)video.deviceId={exact:selectedId};
   try{
-    cameraStream=await navigator.mediaDevices.getUserMedia({audio:false,video});
-    $('usbCamera').srcObject=cameraStream;await $('usbCamera').play().catch(()=>{});
-    const actualId=cameraStream.getVideoTracks()[0]?.getSettings().deviceId||selectedId;
-    if(actualId)localStorage.setItem(CAMERA_STORAGE_KEY,actualId);
+    const url=new URL($('cameraDevice').value.trim()||DEFAULT_CAMERA_STREAM);
+    if(!['http:','https:'].includes(url.protocol))throw new Error('HTTPまたはHTTPSの配信URLを指定してください。');
+    $('cameraDevice').value=url.href;localStorage.setItem(CAMERA_STORAGE_KEY,url.href);
+    const frame=$('usbCamera');cameraStream=url.href;
+    await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('UNO Qカメラ配信が応答しません。USBホスト接続を確認してください。')),10000);frame.onload=()=>{clearTimeout(timer);resolve();};frame.onerror=()=>{clearTimeout(timer);reject(new Error('UNO Qカメラ配信を読み込めません。'));};frame.src=url.href;});
     $('cameraPlaceholder').hidden=true;$('cameraStart').disabled=true;$('cameraStop').disabled=false;
     $('cameraState').textContent='映像表示中';$('cameraState').classList.add('is-running');
-    await refreshCameras(actualId);
-  }catch(error){releaseCamera();$('cameraState').textContent='開始できません';$('cameraPlaceholder').textContent=cameraErrorMessage(error);throw error;}
+  }catch(error){releaseCamera();$('cameraState').textContent='開始できません';$('cameraPlaceholder').textContent=`カメラを開始できません: ${error&&error.message?error.message:String(error)}`;throw error;}
 }
 async function setupCamera(){
-  try{const devices=await refreshCameras();if(devices.length)$('cameraState').textContent='開始待ち';}
-  catch(_){/* The camera card already explains permission and device errors. */}
+  $('cameraDevice').value=localStorage.getItem(CAMERA_STORAGE_KEY)||DEFAULT_CAMERA_STREAM;$('cameraState').textContent='開始待ち';
   $('cameraStart').onclick=()=>startCamera().catch(()=>{});
   $('cameraStop').onclick=stopCamera;
-  $('cameraDevice').onchange=async event=>{localStorage.setItem(CAMERA_STORAGE_KEY,event.target.value);if(cameraStream)await startCamera().catch(()=>{});};
-  if(navigator.mediaDevices?.addEventListener)navigator.mediaDevices.addEventListener('devicechange',()=>refreshCameras().catch(()=>{}));
-  window.addEventListener('pagehide',releaseCamera);
+  $('cameraDevice').onchange=event=>localStorage.setItem(CAMERA_STORAGE_KEY,event.target.value.trim());
+  await startCamera().catch(()=>{});
 }
 function renderScores(outputs=[]){$('scoreBars').innerHTML=Array.from({length:panelClassCount},(_,i)=>{const raw=Number(outputs[i]||0),height=Math.max(3,Math.min(100,raw*100));return `<div class="score-bar"><i style="height:${height}%"></i><span>${i+1}</span></div>`;}).join('');}
 function displayArea(area){

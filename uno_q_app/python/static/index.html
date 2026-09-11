@@ -30,11 +30,11 @@
   <section id="stats" class="stats" hidden></section><div id="controlStatus" hidden>接続後、「推論開始」を押してアクリル板をたたいてください。</div><div id="error" class="error"></div>
   <section class="card camera-panel" aria-labelledby="cameraPanelTitle">
     <div class="camera-panel-heading">
-      <div><h2 id="cameraPanelTitle">PC配信カメラ</h2><p>このUNO Qページ内へ、LAN上のPCが配信するMJPEG映像をiframeで表示します。</p></div>
-      <span class="badge">PC 192.168.50.177</span>
+      <div><h2 id="cameraPanelTitle">UNO Q USBカメラ</h2><p>UNO QのLinux側がUSBカメラを取得し、このページへ映像を配信します。</p></div>
+      <span class="badge">UNO Q / UVC</span>
     </div>
-    <div class="camera-server-control"><label>PCカメラ配信URL <input id="cameraServerUrl" type="url" value="http://192.168.50.177:8878/"></label><button id="cameraServerApply" type="button">iframeへ表示</button></div>
-    <iframe id="cameraFrame" class="camera-frame" src="http://192.168.50.177:8878/" title="PC配信カメラ映像" loading="eager"></iframe>
+    <div class="camera-server-control"><label>UNO Qカメラ配信URL <input id="cameraServerUrl" type="url"></label><button id="cameraServerApply" type="button">iframeへ表示</button></div>
+    <iframe id="cameraFrame" class="camera-frame" title="UNO Q USBカメラ映像" loading="eager"></iframe>
   </section>
   <section class="card ai-panel live-inference">
     <div class="ai-toolbar"><h2>判定エリア</h2></div><div id="aiSummary" class="ai-summary">打撃を待っています</div>

@@ -49,6 +49,7 @@ def softmax(logits: np.ndarray) -> np.ndarray:
 
 class PositionModel:
     name = "acrylic_pan_position_400x300x5_grid_v7_portable"
+    accelerator = "cpu_numpy"
 
     def __init__(self, model_path: Path, parity_path: Path, metadata_path: Path):
         archive = np.load(model_path)
@@ -124,7 +125,8 @@ class PositionModel:
             "sigma_y_mm": float(np.sqrt(max(covariance[1, 1], 0.0))),
             "inference_us": int((perf_counter_ns() - started) // 1000),
             "model": self.name,
-            "method": "pc_mlp_60class_probability_map",
+            "method": "uno_q_linux_mlp_60class_probability_map",
+            "inference_accelerator": self.accelerator,
         }
 
     def parity_case(self, case_id: int) -> dict:

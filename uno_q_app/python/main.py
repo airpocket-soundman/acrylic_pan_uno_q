@@ -76,7 +76,8 @@ def _position(result: dict) -> dict:
         },
         "distribution_peak_probability": result["distribution_peak_probability"],
         "distribution_entropy": result["distribution_entropy"],
-        "model_available": True, "method": result["method"], "inference_source": "device",
+        "model_available": True, "method": result["method"],
+        "inference_accelerator": result["inference_accelerator"], "inference_source": "device",
         "scope": "KX134 25.6 kHz / 60測定点確率・疑似XY・直接XY",
     }
 
@@ -119,7 +120,8 @@ def get_status() -> dict:
     status.update({
         "panel": PANEL, "panel_profile_id": PANEL["id"], "panel_profiles": [PANEL],
         "collection": training.status(), "training": dict(training.training),
-        "model": model.name, "model_metadata": model.metadata, "web_port": 8765,
+        "model": model.name, "model_accelerator": model.accelerator,
+        "model_metadata": model.metadata, "web_port": 8765,
         "output_root": str(DATA_ROOT / "training"), "session_dir": None,
         "last_control": None, "assembly": {"progress": None, "retry_required": False},
         "stats": {"events_received": status["event_count"], "events_saved": status["event_count"],

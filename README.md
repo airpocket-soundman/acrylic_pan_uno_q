@@ -33,6 +33,11 @@ UNO Qのポート8765から、推論結果 `/`、学習データ採取 `/collect
 `/instrument-probability.html` を配信します。実装・再学習手順は
 [`uno_q_app/README.md`](uno_q_app/README.md) を参照してください。
 
+USBカメラはPCではなくUNO QのLinux側で取得し、公式ビデオBrickがポート4912の
+`/embed`から配信します。外部給電対応USB-Cハブ、給電方法、Wi-Fi管理への切替、
+接続後の確認手順は[UNO Q USBカメラ構成](docs/uno-q-usb-camera.md)にまとめています。
+USBホスト運転後の配備には `scripts/deploy-uno-q-wifi.ps1` を使用します。
+
 ### MPU9250実測データの扱い
 
 `http://<UNO-Q-IP>:8765/collector.html` で採取したデータのPC保存、再学習、評価、
@@ -64,6 +69,18 @@ powershell -ExecutionPolicy Bypass -File scripts/run-uno-q-web.ps1
 ブラウザで `http://127.0.0.1:8765/` が開き、ADB経由で取得した直近の推論結果を表示します。
 12領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を1秒ごとに更新します。
 Web UIはPC上で動作し、UNO Q側へ追加パッケージを導入しません。
+
+Wi-Fi接続中のUNO Q実機を操作しながら、PCカメラまたはUNO Q側USBカメラを選んで
+確率ヒートマップを重畳する場合は次を実行します。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-dual-camera-ui.ps1
+```
+
+開いた確率演奏画面の「カメラ入力」で入力元を選択します。視点ごとの8点フィット（四隅4点と、
+左右の縦辺上にある2本の行境界4点）は別々に保存されます。行境界は左右独立の縦辺比率として
+調整できるため、斜め方向から撮影した4×3エリアの奥行き方向の縮みも補正できます。
+UNO Q側カメラには外部給電対応USB-Cハブが必要です。
 
 同じサーバーの `http://127.0.0.1:8765/docs`、またはダッシュボード右上の「設計資料」から
 ドキュメントポータルを開けます。元リポジトリから継承した2D板、3Dソリッド、CalculiXの

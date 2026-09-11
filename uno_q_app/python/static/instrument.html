@@ -77,11 +77,11 @@
       <div class="card camera-card">
         <div class="section-heading"><div><span class="kicker">CAMERA</span><h2>USBカメラ</h2></div><span id="cameraState" class="camera-state">準備中</span></div>
         <div class="camera-viewport">
-          <video id="usbCamera" autoplay playsinline muted aria-label="USBカメラ映像"></video>
-          <div id="cameraPlaceholder" class="camera-placeholder">使用するUSBカメラを選んで「カメラ開始」を押してください</div>
+          <iframe id="usbCamera" title="UNO Q USBカメラ映像"></iframe>
+          <div id="cameraPlaceholder" class="camera-placeholder">UNO QにUSBカメラを接続して「カメラ開始」を押してください</div>
         </div>
         <div class="camera-controls">
-          <label>カメラ<select id="cameraDevice"></select></label>
+          <label>UNO Q配信URL<input id="cameraDevice" type="url"></label>
           <button id="cameraStart" type="button">カメラ開始</button>
           <button id="cameraStop" type="button" disabled>停止</button>
         </div>

@@ -10,8 +10,10 @@ import numpy as np
 try:
     from ai_edge_litert.interpreter import Interpreter, load_delegate
 except ImportError:
-    from tensorflow.lite import Interpreter
-    from tensorflow.lite.experimental import load_delegate
+    import tensorflow as tf
+
+    Interpreter = tf.lite.Interpreter
+    load_delegate = tf.lite.experimental.load_delegate
 
 
 TRIGGER = 64
@@ -49,6 +51,11 @@ def gpu_features(wave: np.ndarray) -> np.ndarray:
     ), axis=-1)[:, None, :].astype(np.float32)
 
 
+def raw_features(wave: np.ndarray) -> np.ndarray:
+    """Pass a raw waveform to models that embed their own preprocessing and FFT."""
+    return wave.astype(np.float32)
+
+
 def percentiles(values: list[float]) -> dict[str, float]:
     data = np.asarray(values)
     return {
@@ -62,15 +69,17 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--parity", type=Path, required=True)
-    parser.add_argument("--variant", choices=("cpu", "gpu"), required=True)
+    parser.add_argument("--variant", choices=("cpu", "gpu", "fft-hybrid"), required=True)
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--repeats", type=int, default=10)
     parser.add_argument("--delegate", type=Path)
     args = parser.parse_args()
 
     parity = np.load(args.parity)
-    input_key = "features_714" if args.variant == "cpu" else "waveform_448x3"
-    make_features = cpu_features if args.variant == "cpu" else gpu_features
+    input_key = {"cpu": "features_714", "gpu": "waveform_448x3",
+                 "fft-hybrid": "waveform"}[args.variant]
+    make_features = {"cpu": cpu_features, "gpu": gpu_features,
+                     "fft-hybrid": raw_features}[args.variant]
     expected_inputs = parity[input_key]
     generated_inputs = np.stack([make_features(row) for row in parity["waveform"]])
 

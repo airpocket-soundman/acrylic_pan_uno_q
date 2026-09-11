@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/controls.css?v=20260718-1">
   <link rel="stylesheet" href="/tabs.css?v=20260719-1">
   <link rel="stylesheet" href="/position.css?v=20260823-3">
-<link rel="stylesheet" href="/instrument-probability.css?v=20260911-9">
+<link rel="stylesheet" href="/instrument-probability.css?v=20260911-10">
   <link rel="stylesheet" href="/panel-profile.css?v=20260720-1">
 </head>
 <body><main>
@@ -31,6 +31,7 @@
         <select id="port" hidden aria-label="固定SPI接続"></select><button id="refresh" hidden>更新</button>
         <select id="positionSource" hidden aria-label="固定Linux推論"><option value="pc" selected>UNO Q Linux</option></select>
         <span id="fixedRuntime" class="fixed-runtime badge">400 × 300 mm・内部SPI・UNO Q Linux AI</span>
+        <label id="inferenceModelLabel">推論モデル <select id="inferenceModel"><option value="fft_standard">FFT標準版</option><option value="temporal_cnn">従来CNN版</option><option value="temporal_fft_ensemble">CNN＋FFTアンサンブル</option></select></label>
         <label id="displayLabel" hidden>表示 <select id="displayMode"><option value="camera" selected>カメラ重畳</option></select></label>
         <label id="instrumentLabel">音色 <select id="instrumentSelect"><option value="steel_drum">スチールドラム</option><option value="piano">ピアノ</option><option value="harpsichord">チェンバロ</option><option value="guitar">ギター</option><option value="drums">ドラム</option></select></label>
         <label id="masterVolumeLabel">音量 <output id="masterVolumeValue" for="masterVolume">70%</output><input id="masterVolume" type="range" min="0" max="100" step="5" value="70" aria-label="音量"></label>
@@ -71,5 +72,5 @@
       </div>
     </aside>
   </section>
-</main><script src="/panel-profile.js?v=20260720-1"></script><script src="/instrument-probability.js?v=20260911-8"></script></body>
+</main><script src="/panel-profile.js?v=20260720-1"></script><script src="/instrument-probability.js?v=20260911-9"></script></body>
 </html>

@@ -10,16 +10,14 @@ from pathlib import Path
 from arduino.app_utils import App, Bridge, Logger
 
 from audio_synth import synthesize_note
-from position_model import PositionModel
+from tflite_position_models import SelectablePositionModels
 from training_manager import PANEL, TrainingManager
 from web_server import start_web_server
 
 ROOT = Path(__file__).resolve().parent
 DATA_ROOT = Path("data")
 STATIC_ROOT = ROOT / "static"
-MODEL_PATH = ROOT / "position_model.npz"
-PARITY_PATH = ROOT / "position_parity.npz"
-METADATA_PATH = ROOT / "position_metadata.json"
+MODEL_ROOT = ROOT / "tflite_models"
 CAPTURE_PATH = DATA_ROOT / "captures" / "kx134_events.jsonl"
 INFERENCE_PATH = DATA_ROOT / "inference" / "results.jsonl"
 SAMPLE_RATE_HZ = 25_600
@@ -40,7 +38,7 @@ runtime = {
     "read_1000_us": 0, "hardware_cycle_hz": 0,
     "observed_z_min": 0, "observed_z_max": 0, "observed_max_jerk": 0,
 }
-model = PositionModel(MODEL_PATH, PARITY_PATH, METADATA_PATH)
+model = SelectablePositionModels(MODEL_ROOT, DATA_ROOT)
 training = TrainingManager(DATA_ROOT, model)
 
 
@@ -122,6 +120,8 @@ def get_status() -> dict:
         "collection": training.status(), "training": dict(training.training),
         "model": model.name, "model_accelerator": model.accelerator,
         "model_metadata": model.metadata, "web_port": 8765,
+        "inference_model_id": model.active_id, "inference_model_label": model.label,
+        "inference_models": model.available(),
         "output_root": str(DATA_ROOT / "training"), "session_dir": None,
         "last_control": None, "assembly": {"progress": None, "retry_required": False},
         "stats": {"events_received": status["event_count"], "events_saved": status["event_count"],
@@ -134,6 +134,11 @@ def get_status() -> dict:
 def update_runtime(**values) -> dict:
     with lock:
         runtime.update(values)
+    return get_status()
+
+
+def select_inference_model(model_id: str) -> dict:
+    model.select(model_id)
     return get_status()
 
 
@@ -229,6 +234,7 @@ Bridge.provide("on_sampling_status", on_sampling_status)
 Bridge.provide("on_capture_sample", on_capture_sample)
 Bridge.provide("on_capture_chunk", on_capture_chunk)
 start_web_server(STATIC_ROOT, get_status, update_runtime, run_demo, training, synthesize_note,
-                 set_retrigger_guard, set_sensor_thresholds, wait_for_ai)
+                 set_retrigger_guard, set_sensor_thresholds, wait_for_ai,
+                 select_inference_model)
 logger.info("KX134 acquisition, inference and web UI listening on port 8765")
 App.run()

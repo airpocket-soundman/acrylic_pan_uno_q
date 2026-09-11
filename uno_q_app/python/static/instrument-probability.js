@@ -125,7 +125,7 @@ function applyLanguage(){
   document.documentElement.lang=language;document.title=L('Acrylic Pan 確率分布演奏','Acrylic Pan Probability Instrument');$('languageToggle').textContent=L('English','日本語');
   $('introText').textContent=L('60座標確率をカメラ映像上の四角形へ透過重畳し、UNO Qで合成した最尤エリアの音声を配信します。','Overlays the 60-point probability heatmap on the camera quadrilateral and streams UNO Q-synthesized audio.');
   const tabs=[['/collector.html','学習データ採取','Data Collection'],['/','推論結果','Inference'],['/position.html','位置推定','Position'],['/instrument.html','クラス演奏','Class Instrument'],['/instrument-probability.html','確率演奏','Probability Instrument']];document.querySelector('.app-tabs').setAttribute('aria-label',L('動作モード','Operating mode'));tabs.forEach(([href,ja,en])=>{const link=document.querySelector('.app-tabs a[href="'+href+'"]');if(link)link.textContent=L(ja,en);});
-  [['displayLabel','表示','Display'],['instrumentLabel','音色','Instrument'],['masterVolumeLabel','音量','Volume'],['cameraSourceLabel','カメラ入力','Camera input'],['cameraLabel','PCカメラ','PC camera'],['cameraUrlLabel','UNO Q配信URL','UNO Q stream URL'],['songLabel','演奏補助','Performance guide'],['noteLengthLabel','音の長さ','Note length']].forEach(args=>setLabelText(args[0],L(args[1],args[2])));
+  [['displayLabel','表示','Display'],['inferenceModelLabel','推論モデル','Inference model'],['instrumentLabel','音色','Instrument'],['masterVolumeLabel','音量','Volume'],['cameraSourceLabel','カメラ入力','Camera input'],['cameraLabel','PCカメラ','PC camera'],['cameraUrlLabel','UNO Q配信URL','UNO Q stream URL'],['songLabel','演奏補助','Performance guide'],['noteLengthLabel','音の長さ','Note length']].forEach(args=>setLabelText(args[0],L(args[1],args[2])));
   [['refresh','更新','Refresh'],['connect','接続','Connect'],['disconnect','切断','Disconnect'],['performanceStart','演奏開始','Start performance'],['performanceStop','演奏停止','Stop performance'],['probabilityDemo','表示デモ','Display demo'],['cameraStart','カメラ開始','Start camera'],['cameraStop','停止','Stop'],['calibrationStart','8点フィット','8-point fit'],['calibrationClear','フィット消去','Clear fit'],['songReset','最初から','Restart']].forEach(([id,ja,en])=>$(id).textContent=L(ja,en));
   $('fixedRuntime').textContent=L('400 × 300 mm・内部SPI・UNO Q Linux AI','400 × 300 mm · Internal SPI · UNO Q Linux AI');setOptionText('displayMode','panel',L('パネル表示','Panel'));setOptionText('displayMode','camera',L('カメラ重畳','Camera overlay'));
   [['steel_drum','スチールドラム','Steel drum'],['piano','ピアノ','Piano'],['harpsichord','チェンバロ','Harpsichord'],['guitar','ギター','Guitar'],['drums','ドラム','Drums']].forEach(([value,ja,en])=>setOptionText('instrumentSelect',value,L(ja,en)));
@@ -225,9 +225,11 @@ function setButton(id,disabled,active=false){const button=$(id);button.disabled=
 function updateControls(data){
   latestStatus=data;
   const connected=Boolean(data.connected),running=Boolean(data.inference_active),audible=running&&performanceEnabled;
+  const modelSelect=$('inferenceModel'),models=Array.isArray(data.inference_models)?data.inference_models:[];
+  if(models.length){const signature=models.map(item=>item.id).join('|');if(modelSelect.dataset.signature!==signature){modelSelect.replaceChildren(...models.map(item=>new Option(item.label,item.id)));modelSelect.dataset.signature=signature;}modelSelect.value=data.inference_model_id||models[0].id;}
   $('connection').textContent=connected?L('接続中 ','Connected ')+data.port:L('未接続','Disconnected');$('connection').classList.toggle('online',connected);
   $('firmwareMode').textContent=audible?L('UNO Q確率演奏中','UNO Q probability performance'):(data.device_mode==='inference'?L('UNO Q Linux推論','UNO Q Linux inference'):L('モード切替中','Switching mode'));
-  $('firmwareMode').classList.toggle('online',audible);$('port').disabled=connected;$('positionSource').disabled=running;
+  $('firmwareMode').classList.toggle('online',audible);$('port').disabled=connected;$('positionSource').disabled=running;modelSelect.disabled=!models.length;
   setButton('connect',connected,connected);setButton('disconnect',!connected);setButton('performanceStart',!connected||audible,audible);setButton('performanceStop',!connected||!running);
 }
 async function refreshStatus(){
@@ -315,7 +317,8 @@ function renderPosition(position,play=false){
   const probabilities=areaProbabilities(position),area=probabilities.indexOf(Math.max(...probabilities)),areaProbability=probabilities[area]||0;
   const nextArea=currentSongArea(),secondArea=currentSongArea(1);Array.from($('areaSelectionGrid').children).forEach((cell,index)=>{cell.classList.toggle('winner',index===area);cell.classList.toggle('next-note',index===nextArea);cell.classList.toggle('second-next-note',index===secondArea&&index!==nextArea);});
   $('coordinateReadout').textContent=L('最尤60点 ','Most likely of 60 points ')+'X '+x.toFixed(1)+' / Y '+y.toFixed(1)+' mm';$('pseudoCoordinateReadout').textContent=L('疑似XY座標 ','Pseudo XY coordinate ')+'X '+pseudoX.toFixed(1)+' / Y '+pseudoY.toFixed(1)+' mm';$('areaReadout').textContent=L('最尤エリア ','Most likely area ')+(area+1);$('peakReadout').textContent=L('エリア確率 ','Area probability ')+(areaProbability*100).toFixed(1)+'%';
-  $('distributionSource').textContent=L('UNO Q Linux 60座標確率モデル','UNO Q Linux 60-point probability model');
+  const activeModel=latestStatus?.inference_model_label||L('60座標確率モデル','60-point probability model');
+  $('distributionSource').textContent=`${activeModel} · CPU/XNNPACK`;
   $('areaProbabilities').innerHTML=probabilities.map((value,index)=>'<div class="area-probability '+(index===area?'winner':'')+' '+(index===nextArea?'next-note':'')+' '+(index===secondArea&&index!==nextArea?'second-next-note':'')+'"><span>'+L('エリア','Area ')+(index+1)+'<small>'+(panelNote(index)||'—')+'</small></span><i><b style="width:'+Math.max(0,Math.min(100,value*100))+'%"></b></i><output>'+(value*100).toFixed(1)+'%</output></div>').join('');
   lastRenderedPosition=position;redrawCameraOverlay();
   if(play&&performanceEnabled)playArea(area,areaProbability);
@@ -368,6 +371,7 @@ $('refresh').onclick=()=>ports().catch(error=>$('error').textContent=error.messa
 $('connect').onclick=async()=>{try{await api('/api/connect',{port:$('port').value});const current=await api('/api/status');if(current.panel_profile_id!=='400x300x5')await api('/api/panel',{panel_profile_id:'400x300x5'});await api('/api/device/mode',{mode:modeForSource()});await refreshStatus();}catch(error){$('error').textContent=error.message;}};
 $('disconnect').onclick=async()=>{try{performanceEnabled=false;await api('/api/disconnect',{});await refreshStatus();}catch(error){$('error').textContent=error.message;}};
 $('performanceStart').onclick=startPerformance;$('performanceStop').onclick=stopPerformance;$('probabilityDemo').onclick=demo;
+$('inferenceModel').onchange=async()=>{const select=$('inferenceModel');select.disabled=true;try{const data=await api('/api/inference/model',{model_id:select.value});updateControls(data);$('error').textContent='';}catch(error){$('error').textContent=error.message;await refreshStatus();}};
 $('positionSource').onchange=async()=>{try{const current=await api('/api/status');if(current.connected&&!current.inference_active)await api('/api/device/mode',{mode:modeForSource()});await refreshStatus();}catch(error){$('error').textContent=error.message;}};
 $('instrumentSelect').value=settings.instrument;$('instrumentSelect').onchange=()=>{settings.instrument=$('instrumentSelect').value;saveInstrument();scheduleUnoQAudioPrime();};
 $('masterVolume').value=String(Math.round(settings.masterVolume*100));const updateMasterVolume=()=>{settings.masterVolume=Number($('masterVolume').value)/100;$('masterVolumeValue').textContent=`${Math.round(settings.masterVolume*100)}%`;if(masterGain&&audioContext)masterGain.gain.setTargetAtTime(settings.masterVolume,audioContext.currentTime,.01);saveInstrument();};$('masterVolume').oninput=updateMasterVolume;updateMasterVolume();

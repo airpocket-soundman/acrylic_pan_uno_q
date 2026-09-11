@@ -8,6 +8,8 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $appSource = Join-Path $repoRoot "uno_q_app"
 $positionModelRoot = Join-Path $repoRoot "data\position_model_400x300"
+$fftModelRoot = Join-Path $repoRoot "uno_q_fft_candidates"
+$cnnModelRoot = Join-Path $repoRoot "uno_q_model_candidates"
 
 $adb = (Get-Command adb.exe -ErrorAction SilentlyContinue).Source
 if (-not $adb) {
@@ -31,6 +33,13 @@ Copy-Item -LiteralPath $appSource -Destination $staging -Recurse
 Copy-Item -LiteralPath (Join-Path $positionModelRoot "model.npz") -Destination (Join-Path $staging "python\position_model.npz")
 Copy-Item -LiteralPath (Join-Path $positionModelRoot "parity_cases.npz") -Destination (Join-Path $staging "python\position_parity.npz")
 Copy-Item -LiteralPath (Join-Path $positionModelRoot "model_metadata.json") -Destination (Join-Path $staging "python\position_metadata.json")
+$tfliteDestination = Join-Path $staging "python\tflite_models"
+New-Item -ItemType Directory -Path $tfliteDestination -Force | Out-Null
+foreach ($file in "acrylic_pan_fft_hybrid_standard_fp16.tflite", "acrylic_pan_temporal_fft_ensemble_fp16.tflite", "parity_cases.npz", "evaluation_report.json") {
+    Copy-Item -LiteralPath (Join-Path $fftModelRoot $file) -Destination $tfliteDestination
+}
+Copy-Item -LiteralPath (Join-Path $cnnModelRoot "acrylic_pan_xy_gpu_fp16.tflite") -Destination $tfliteDestination
+Copy-Item -LiteralPath (Join-Path $cnnModelRoot "evaluation_report.json") -Destination (Join-Path $tfliteDestination "cnn_evaluation_report.json")
 
 $adbArgs = @()
 if ($Device) { $adbArgs += @("-s", $Device) }

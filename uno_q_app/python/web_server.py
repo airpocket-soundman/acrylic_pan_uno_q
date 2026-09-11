@@ -19,6 +19,7 @@ class Handler(SimpleHTTPRequestHandler):
     set_retrigger_guard: object
     set_sensor_thresholds: object
     wait_for_ai: object
+    select_inference_model: object
     audio_cache: dict[tuple[tuple[str, str], ...], bytes] = {}
     audio_cache_lock = threading.RLock()
 
@@ -98,6 +99,8 @@ class Handler(SimpleHTTPRequestHandler):
             if path == "/api/inference/stop": return self._json(self.update_runtime(inference_active=False))
             if path == "/api/inference/retrigger":
                 return self._json(self.set_retrigger_guard(int(body["milliseconds"])))
+            if path == "/api/inference/model":
+                return self._json(self.select_inference_model(str(body["model_id"])))
             if path == "/api/panel": return self._json(self.get_status())
             if path in ("/api/demo", "/api/ai/selftest"): return self._json(self.run_demo(int(body.get("case_id", 0))))
             if path == "/api/collection/start":
@@ -126,13 +129,14 @@ class Handler(SimpleHTTPRequestHandler):
 
 def start_web_server(static_root: Path, get_status, update_runtime, run_demo, training,
                      synthesize_audio, set_retrigger_guard, set_sensor_thresholds,
-                     wait_for_ai, port: int = 8765):
+                     wait_for_ai, select_inference_model, port: int = 8765):
     handler = type("AcrylicPanHandler", (Handler,), {"static_root": static_root,
         "get_status": staticmethod(get_status), "update_runtime": staticmethod(update_runtime),
         "run_demo": staticmethod(run_demo), "training": training,
         "synthesize_audio": staticmethod(synthesize_audio),
         "set_retrigger_guard": staticmethod(set_retrigger_guard),
         "set_sensor_thresholds": staticmethod(set_sensor_thresholds),
-        "wait_for_ai": staticmethod(wait_for_ai)})
+        "wait_for_ai": staticmethod(wait_for_ai),
+        "select_inference_model": staticmethod(select_inference_model)})
     server = ThreadingHTTPServer(("0.0.0.0", port), handler)
     threading.Thread(target=server.serve_forever, name="apan-web", daemon=True).start(); return server

@@ -183,10 +183,10 @@ def describe(path: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sessions", type=Path,
-                        default=Path(r"D:\GitHub\acrylic_pan\data\raw\sessions"))
+                        default=Path(os.environ.get("ACRYLIC_PAN_SESSIONS", "data/raw/sessions")))
     parser.add_argument("--output", type=Path, default=Path("uno_q_fft_candidates"))
     parser.add_argument("--epochs", type=int, default=120)
-    parser.add_argument("--seed", type=int, default=20260911)
+    parser.add_argument("--seed", type=int, default=20260912)
     args = parser.parse_args()
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -200,6 +200,13 @@ def main() -> None:
     train = np.isin(sessions, TRAIN_SESSIONS)
     validation = np.isin(sessions, VALIDATION_SESSIONS)
     test = np.isin(sessions, TEST_SESSIONS)
+    split_coverage = {
+        "train": int(np.unique(labels[train]).size),
+        "validation": int(np.unique(labels[validation]).size),
+        "test": int(np.unique(labels[test]).size),
+    }
+    if any(count != 60 for count in split_coverage.values()):
+        raise ValueError(f"every split must contain all 60 positions: {split_coverage}")
     train_indices = balanced_indices(labels, train, args.seed)
     args.output.mkdir(parents=True, exist_ok=True)
 
@@ -215,8 +222,9 @@ def main() -> None:
                   "train": list(TRAIN_SESSIONS), "validation": list(VALIDATION_SESSIONS),
                   "test": list(TEST_SESSIONS),
                   "counts": {"train": int(train.sum()), "validation": int(validation.sum()),
-                             "test": int(test.sum())}},
-        "evaluation_limit": "held-out test contains 48 of 60 positions; center 12 are absent",
+                             "test": int(test.sum())},
+                  "position_coverage": split_coverage},
+        "evaluation_coverage": "all train, validation, and held-out test splits contain all 60 positions",
         "models": {},
     }
 
@@ -282,8 +290,8 @@ def main() -> None:
         "# UNO Q embedded-FFT hybrid candidates\n\n"
         "These candidates accept one raw 512-sample waveform and perform baseline removal, "
         "normalization, Hann-windowed RFFT, time-domain convolution, and time/frequency fusion "
-        "inside the TFLite model. See `evaluation_report.json` for held-out metrics and the "
-        "important 48-of-60-position evaluation limitation.\n",
+        "inside the TFLite model. See `evaluation_report.json` for held-out metrics on the "
+        "whole-session split covering all 60 positions.\n",
         encoding="utf-8",
     )
     print(json.dumps(report, indent=2))

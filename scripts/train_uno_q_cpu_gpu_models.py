@@ -23,13 +23,18 @@ TRIGGER = 64
 PANEL_SIZE = np.asarray([400.0, 300.0], dtype=np.float32)
 TRAIN_SESSIONS = (
     "20260720_215533_aa9943ae", "20260720_220935_bd12a70b",
-    "20260821_215225_8f38a3e4", "20260821_221547_4c753402",
     "20260823_081435_223491a5", "20260823_082825_9374f169",
     "20260823_083716_e0336d95", "20260823_084554_6d26bd22",
     "20260823_102330_ae4338bd",
 )
-VALIDATION_SESSIONS = ("20260823_103846_18384ce0",)
-TEST_SESSIONS = ("20260823_104754_2553f5d8",)
+VALIDATION_SESSIONS = (
+    "20260821_215225_8f38a3e4",
+    "20260823_103846_18384ce0",
+)
+TEST_SESSIONS = (
+    "20260821_221547_4c753402",
+    "20260823_104754_2553f5d8",
+)
 ALL_SESSIONS = (*TRAIN_SESSIONS, *VALIDATION_SESSIONS, *TEST_SESSIONS)
 
 
@@ -141,6 +146,11 @@ def balanced_indices(labels: np.ndarray, selected: np.ndarray, seed: int) -> np.
     result = np.concatenate([rng.choice(group, target, replace=len(group) < target) for group in groups])
     rng.shuffle(result)
     return result
+
+
+def split_position_coverage(labels: np.ndarray, selected: np.ndarray) -> list[int]:
+    """Return sorted position IDs present in one whole-session split."""
+    return sorted(np.unique(labels[selected]).astype(int).tolist())
 
 
 def heads(features: tf.Tensor) -> tuple[tf.Tensor, tf.Tensor]:
@@ -315,10 +325,11 @@ def describe_tflite(path: Path) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sessions", type=Path, default=Path(r"D:\GitHub\acrylic_pan\data\raw\sessions"))
+    parser.add_argument("--sessions", type=Path,
+                        default=Path(os.environ.get("ACRYLIC_PAN_SESSIONS", "data/raw/sessions")))
     parser.add_argument("--output", type=Path, default=Path("uno_q_model_candidates"))
     parser.add_argument("--epochs", type=int, default=100)
-    parser.add_argument("--seed", type=int, default=20260911)
+    parser.add_argument("--seed", type=int, default=20260912)
     args = parser.parse_args()
     random.seed(args.seed); np.random.seed(args.seed); tf.random.set_seed(args.seed)
     data = load_dataset(args.sessions)
@@ -327,6 +338,13 @@ def main() -> None:
     train = np.isin(sessions, TRAIN_SESSIONS)
     validation = np.isin(sessions, VALIDATION_SESSIONS)
     test = np.isin(sessions, TEST_SESSIONS)
+    coverage = {
+        "train": split_position_coverage(labels, train),
+        "validation": split_position_coverage(labels, validation),
+        "test": split_position_coverage(labels, test),
+    }
+    if any(len(position_ids) != 60 for position_ids in coverage.values()):
+        raise ValueError(f"every split must contain all 60 positions: {coverage}")
     train_indices = balanced_indices(labels, train, args.seed)
     cpu_x, gpu_x = rich_features(waves), gpu_features(waves)
     args.output.mkdir(parents=True, exist_ok=True)
@@ -390,6 +408,7 @@ def main() -> None:
         "strategy": "whole_session_split_no_event_leakage", "train": list(TRAIN_SESSIONS),
         "validation": list(VALIDATION_SESSIONS), "test": list(TEST_SESSIONS),
         "counts": {"train": int(train.sum()), "validation": int(validation.sum()), "test": int(test.sum())},
+        "position_coverage": {name: len(position_ids) for name, position_ids in coverage.items()},
     }
     report = {
         "created_by": "scripts/train_uno_q_cpu_gpu_models.py", "seed": args.seed,
@@ -455,7 +474,8 @@ def main() -> None:
     (args.output / "evaluation_report.html").write_text(
         "<!doctype html><meta charset=utf-8><title>UNO Q model evaluation</title>"
         "<h1>UNO Q CPU/GPU model evaluation</h1>"
-        "<p>Whole-session held-out test: 1,907 events. GPU delegate execution remains to be verified on UNO Q.</p>"
+        f"<p>Whole-session held-out test: {int(test.sum()):,} events covering all 60 positions. "
+        "GPU delegate execution remains to be verified on UNO Q.</p>"
         "<table border=1><tr><th>Model</th><th>60-position</th><th>12-area</th>"
         "<th>MAP mean mm</th><th>Direct XY mean mm</th></tr>" + rows + "</table>",
         encoding="utf-8",

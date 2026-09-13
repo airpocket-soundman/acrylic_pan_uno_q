@@ -21,4 +21,4 @@ $process = Start-Process -FilePath $python -ArgumentList @($server, "--port", "8
     -RedirectStandardOutput (Join-Path $state "stdout.log") `
     -RedirectStandardError (Join-Path $state "stderr.log")
 Set-Content -LiteralPath $pidPath -Value $process.Id
-Write-Output "PC camera server started: http://192.168.50.177:8878/ (PID $($process.Id))"
+Write-Output "PC camera server started: http://127.0.0.1:8878/ (PID $($process.Id))"

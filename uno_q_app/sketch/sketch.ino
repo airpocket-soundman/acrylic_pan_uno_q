@@ -35,7 +35,7 @@ bool observedPreviousValid = false;
 uint32_t eventSequence = 0;
 uint32_t nextStatusAt = 0;
 uint32_t lastAcceptedEventMs = 0;
-uint16_t retriggerGuardMs = 80;
+uint16_t retriggerGuardMs = 120;
 bool acceptedEventExists = false;
 bool sensorReady = false;
 bool samplingStatusReported = false;
@@ -112,9 +112,11 @@ void setup() {
   Bridge.notify("on_runtime_status", sensorReady ? "sensor" : "error",
                 sensorReady);
   if (sensorReady) nextSampleCycle = DWT->CYCCNT + samplePeriodCycles;
-  // Python startup takes about three seconds on UNO Q; report after it has
-  // subscribed, while keeping the first five seconds free of Bridge traffic.
-  nextStatusAt = millis() + 5000;
+  // The Linux app waits for the camera brick and loads the inference model and
+  // SoundFont before entering App.run(). Report after that cold-start window so
+  // a board power-on reliably reaches the Python subscribers. This one status
+  // burst happens before performance begins and does not disturb later samples.
+  nextStatusAt = millis() + 20000;
 }
 
 void loop() {

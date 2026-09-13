@@ -1,159 +1,183 @@
-# Acrylic Pan for Arduino UNO Q
+# ModalTouch — AI Acrylic Instrument on Arduino UNO Q
 
-400 x 300 x 5 mm のアクリルパネルを打楽器兼タッチインターフェースにする
-Arduino UNO Q 向けプロジェクトです。MPU9250 加速度センサの振動波形から
-4 x 3領域（12クラス）の打撃位置を推定し、音階とヒートマップへ変換します。
-旧400 x 200 x 3 mm・4 x 2構成は比較用パネルプロファイルとして保持します。
+![ModalTouch system architecture](docs/assets/hackster/modal-touch-system-architecture.png)
 
-このリポジトリは旧 `acrylic_pan` から履歴を引き継いだ移植プロジェクトです。
-旧 ML63Q2557 / LEXIDE ファームは比較資料として `firmware/` に残し、新しい実装は
-`uno_q_app/` に置きます。
+ModalTouch turns a **400 × 300 × 5 mm acrylic sheet** into a low-latency musical instrument and tangible controller. One KX134-1211 accelerometer captures the vibration from each strike. An embedded-FFT neural network running on Arduino UNO Q expands that single waveform into a probability field over 60 physical positions, an XY estimate, and one of 12 playable areas.
 
-AIモデルは旧ML63Q2557のRAM、ノード数、bfloat16、1隠れ層ELMの制約を継承しません。
-旧モデルをbaselineとして残しつつ、UNO Qの計算能力に合わせた3軸時系列モデルと
-multi-task推論で精度向上を狙います。詳しくは [開発方針](docs/development-policy.md) を参照してください。
+The complete application runs on UNO Q: 25.6 kHz acquisition, impact detection, TensorFlow Lite inference, UVC camera streaming, perspective-mapped heat-map rendering, FluidSynth audio generation, training-data collection, and the Wi-Fi web server. No cloud inference is required.
 
-元プロジェクトの実測7,132イベントをMPU9250相当へ変換し、12クラス、60クラス＋疑似XY、
-直接XYモデルを再学習して `uno_q_app` に搭載しています。UNO Q内で実センサデータの採取、
-再学習、推論、ヒートマップ・楽器画面の配信まで完結します。
+> 日本語で全体を確認する場合は、[Hackster Story日本語版](docs/hackster-story-ja.html)を開いてください。
 
-## 現行MPU9250 App
+## Highlights
 
-```text
-MPU9250 (4 kHz / ±16 g) --SPI--> STM32U585
-                                  | 80点イベント検出
-                                  v
-                             Arduino Bridge
-                                  v
-                     QRB2210 / NumPyモデル・HTTP UI
-```
+- One fixed accelerometer senses the whole acrylic surface.
+- STM32U585 captures the Z axis at **25.6 kHz**, ±32 g, without five-sample averaging.
+- Each event contains **512 samples / 20 ms**, including 64 pre-trigger samples.
+- QRB2210 runs a **5.90 M-parameter embedded-FFT model** using LiteRT/TFLite.
+- The held-out evaluation covers **all 60 positions** with complete-session separation.
+- The camera overlay, winning panel, 12-area bars, and XY result share the same probability distribution.
+- FluidSynth renders and caches 44.1 kHz instrument notes on UNO Q.
+- The acquisition, inference, camera, audio, and web services start automatically after boot.
 
-UNO Qのポート8765から、推論結果 `/`、学習データ採取 `/collector.html`、位置推論
-`/position.html`、クラス演奏 `/instrument.html`、60点確率演奏
-`/instrument-probability.html` を配信します。実装・再学習手順は
-[`uno_q_app/README.md`](uno_q_app/README.md) を参照してください。
+## Independent-session AI results
 
-USBカメラはPCではなくUNO QのLinux側で取得し、公式ビデオBrickがポート4912の
-`/embed`から配信します。外部給電対応USB-Cハブ、給電方法、Wi-Fi管理への切替、
-接続後の確認手順は[UNO Q USBカメラ構成](docs/uno-q-usb-camera.md)にまとめています。
-USBホスト運転後の配備には `scripts/deploy-uno-q-wifi.ps1` を使用します。
+The 7,132 measured strikes are split by complete recording session, not by randomly mixing similar events. Training, validation, and held-out test each contain all 60 positions, including the 12 area centers.
 
-### MPU9250実測データの扱い
+| Split | Sessions | Strikes | Position coverage |
+|---|---:|---:|---:|
+| Training | 7 | 3,545 | 60 / 60 |
+| Validation | 2 | 1,080 | 60 / 60 |
+| Held-out test | 2 | 2,507 | 60 / 60 |
 
-`http://<UNO-Q-IP>:8765/collector.html` で採取したデータのPC保存、再学習、評価、
-UNO Qへの配備はWeb UIから自動実行しません。指示を受けた段階で既存JSONLを保護し、
-各処理を個別に実施します。詳細は [`uno_q_app/README.md`](uno_q_app/README.md) を
-参照してください。
+Selected model: `uno_q_fft_candidates/acrylic_pan_fft_hybrid_large_fp16.tflite`
 
-## センサなしUNO Q実機確認
+| Metric | Held-out result |
+|---|---:|
+| 60-position top-1 accuracy | **97.05%** |
+| 12-area accuracy | **99.44%** |
+| MAP coordinate mean error | **1.78 mm** |
+| Probability-weighted XY mean error | **1.76 mm** |
+| Model size | 11.82 MB FP16 |
 
-KX134を接続する前は、元リポジトリの12クラスモデルと代表入力を使って
-STM32 → Bridge → Linux推論を確認できます。
+See [embedded-FFT model evaluation](docs/uno-q-fft-hybrid-evaluation-20260911.md) for the split contract, baseline comparison, and model details.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/deploy-uno-q-dummy.ps1
-```
+![One sensor waveform expanded into coordinate space](docs/assets/hackster/one-sensor-ai-expansion.png)
 
-STM32がcase 0〜11を通知し、QRB2210が128-32-12モデルを推論して
-`data/inference/dummy_results.jsonl`へ保存します。手順と実機結果は
-[UNO Qセンサなしダミー推論Bring-up](docs/uno-q-dummy-bringup.md) を参照してください。
-
-### PC Web UI
-
-UNO QをUSB接続し、ダミーAppを起動した状態で次を実行します。
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/run-uno-q-web.ps1
-```
-
-ブラウザで `http://127.0.0.1:8765/` が開き、ADB経由で取得した直近の推論結果を表示します。
-12領域の打点マップ、各クラスのscore、判定一致率、推論時間、履歴を1秒ごとに更新します。
-Web UIはPC上で動作し、UNO Q側へ追加パッケージを導入しません。
-
-Wi-Fi接続中のUNO Q実機を操作しながら、PCカメラまたはUNO Q側USBカメラを選んで
-確率ヒートマップを重畳する場合は次を実行します。
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/run-dual-camera-ui.ps1
-```
-
-開いた確率演奏画面の「カメラ入力」で入力元を選択します。視点ごとの8点フィット（四隅4点と、
-左右の縦辺上にある2本の行境界4点）は別々に保存されます。行境界は左右独立の縦辺比率として
-調整できるため、斜め方向から撮影した4×3エリアの奥行き方向の縮みも補正できます。
-UNO Q側カメラには外部給電対応USB-Cハブが必要です。
-
-同じサーバーの `http://127.0.0.1:8765/docs`、またはダッシュボード右上の「設計資料」から
-ドキュメントポータルを開けます。元リポジトリから継承した2D板、3Dソリッド、CalculiXの
-シミュレーション結果に加え、現行BOMとKX134–UNO Qの全14ピン配線を表示します。
-
-## UNO Qでの構成
+## Hardware architecture
 
 ```text
-KX134-1211 --SPI--> STM32U585 (Zephyr/Arduino sketch)
-                         |  25.6 kHz取得、打撃検出、512点切り出し
-                         v
-                    Arduino Bridge
-                         |
-                         v
-                 QRB2210 (Debian/Python)
-                         |  保存、特徴抽出、推論、Web UI、音源
-                         v
-                    ブラウザ / 音声出力
+KX134-1211 accelerometer
+    │ 3.3 V SPI, ±32 g, 25.6 kHz
+    ▼
+STM32U585 real-time MCU
+    │ trigger + 64 pre-trigger + 512-sample capture
+    │ eight packed Arduino Bridge chunks
+    ▼
+QRB2210 Linux MPU
+    ├─ embedded-FFT TFLite inference
+    ├─ UVC camera stream
+    ├─ FluidSynth audio cache
+    ├─ append-only labelled data collection
+    └─ port 8765 web application
 ```
 
-UNO Q App Lab実装は、現在 `APAN_DUMMY_MODE=1` でセンサアクセスを無効化しています。
-ダミー経路の確認後に有効化する実センサ側コードは次を含みます。
+The KX134 uses 3.3 V only. Do not connect it to 5 V. The confirmed SPI signals are:
 
-- KX134-1211のSPI初期化とWHO_AM_I検査
-- Z軸を25.6 kHz相当で読み取るMCU側サンプラ
-- プリトリガ128点を含む512点の打撃イベント切り出し
-- Bridgeの分割メッセージによるLinux側への波形転送
-- Linux側でのJSONL保存
-
-## 配線（確定）
-
-| KX134-1211 | UNO Q |
-| --- | --- |
-| VDD / IO_VDD | 3.3 V |
+| KX134-1211 EVK | Arduino UNO Q |
+|---|---|
+| VDD, IO_VDD | 3.3 V |
 | GND | GND |
-| SCLK | SCK |
-| SDI | COPI/MOSI |
-| SDO | CIPO/MISO |
-| nCS | D10 |
+| nCS | D10 / SS |
+| SDI / SDA | D11 / COPI |
+| SDO / ADDR | D12 / CIPO |
+| SCLK / SCL | D13 / SCK |
+| INT1 / DRDY | D2, diagnostic |
+| INT2 | D3, optional diagnostic |
 
-旧評価キットの14ピンIDCコネクタは、D10-D13のSPI、D2/D3の割り込み予約、
-3.3 VおよびGNDへ展開します。KX134-1211は3.3 Vで使用し、UNO QのJSPIにある
-5 V端子へは接続しません。全14ピンの配置、CN1の向き、変換アダプタ仕様は
-Solist AI用KX134ブレークアウトボードは[`docs/uno-q-sensor-wiring.md`](docs/uno-q-sensor-wiring.md)、
-KX132-1211-EVK-001は[`docs/kx132-1211-evk-wiring.md`](docs/kx132-1211-evk-wiring.md)を参照してください。
+Use the [complete wiring guide](docs/uno-q-sensor-wiring.md) and [BOM](docs/uno-q-bom.md) before powering the board.
 
-## 起動
+## Web application
 
-1. Arduino App LabでUNO Qへ接続する。
-2. `uno_q_app` をAppとして開く（またはUNO Qへコピーする）。
-3. AppをRunする。
-4. Appログで `KX134 ready` を確認する。
-5. パネルを打撃し、`data/captures/events.jsonl` が生成されることを確認する。
+UNO Q serves the application on port 8765:
 
-実機で最初に確認すべき内容と旧実装との差分は
-[`docs/uno-q-migration.md`](docs/uno-q-migration.md) にまとめています。
+| Page | URL | Purpose |
+|---|---|---|
+| Home / health | `http://<UNO-Q-IP>:8765/` | Sensor and application status |
+| Collector | `/collector.html` | Labelled KX134 capture and waveform review |
+| Position | `/position.html` | 60-point heat map and XY inference |
+| Instrument | `/instrument.html` | 12-area performance mode |
+| Probability instrument | `/instrument-probability.html` | Camera overlay, full probability and audio |
+| Camera test | `/camera-test.html` | UNO Q UVC stream verification |
 
-## PC側の既存資産
+The browser requires one click on **Start performance / 演奏開始** to unlock Web Audio. After that, strikes are detected, localized, visualized, and sounded without manually starting services.
 
-`pc/`、`sim/`、`calculix/`、`web/`、`tests/` は旧プロジェクトから継承しており、
-データ形式と解析の移行が完了するまでそのまま利用できます。Pythonテストは次で実行します。
+## Deploy to UNO Q
 
-UNO Q実機向けのPC Web UIは `pc/uno_q_web/` にあります。旧UIを直接流用せず、
-UNO QのADB接続と現在のJSONL結果形式に合わせた標準ライブラリのみの実装です。
+Prerequisites:
+
+- Arduino UNO Q with App Lab support
+- KX134-1211 evaluation board and verified 3.3 V SPI adapter
+- externally powered USB-C hub and UVC camera
+- stable 5 V / 3 A supply
+- Windows OpenSSH client for Wi-Fi deployment
+
+From PowerShell in the repository root:
 
 ```powershell
-python -m pytest
+.\scripts\deploy-uno-q-wifi.ps1 -Target arduino@<UNO-Q-IP>
 ```
 
-## 現在の制約
+The deployment preserves the remote `data` directory, provisions the audio runtime, enables UVC camera auto-selection, and sets the application containers to restart after a power cycle. Detailed operational notes are in [`uno_q_app/README.md`](uno_q_app/README.md).
 
-- 25.6 kHz周期は現段階では `micros()` によるソフトウェアスケジューリングです。
-  実機計測後、必要ならKX134のDRDY割り込みまたはFIFOへ切り替えます。
-- Bridge転送中は次の打撃イベントを取得しません。
-- Solist-AI固有モデルはUNO Qへ移植せず、Linux側推論へ置き換える予定です。
-- App Lab/Zephyrでの実機ビルドとセンサ動作確認はUNO Q本体が必要です。
+## Collect training data
+
+Open `http://<UNO-Q-IP>:8765/collector.html`, select the labelled position, and start the session manually. Captures are append-only and can be reviewed or deleted individually from the collector page.
+
+The repository does not expose an automatic training pipeline in the UI. Preserve and copy the JSONL data to a development PC before retraining. The default on-board path is:
+
+```text
+/home/arduino/ArduinoApps/acrylic-pan-dummy/data/training/kx134_events.jsonl
+```
+
+## Reproduce model training
+
+Training dependencies:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -r requirements-model-training.txt
+```
+
+The raw measured sessions are intentionally excluded from Git because of their size. Supply a directory containing the recorded `acrylic-pan-session-v1` sessions:
+
+```powershell
+.\.venv\Scripts\python scripts\train_uno_q_fft_hybrid_models.py `
+  --sessions <path-to-raw-sessions> `
+  --output uno_q_fft_candidates `
+  --epochs 120 `
+  --seed 20260912
+```
+
+The script validates the exact session split and refuses to continue unless training, validation, and test each cover all 60 positions.
+
+## Test
+
+Run the UNO Q application and model-contract tests:
+
+```powershell
+.\.venv\Scripts\python -m unittest discover -s tests -p "test_uno_q*.py"
+```
+
+The current suite verifies the TFLite artifact hashes, embedded `RFFT2D` operators, full-grid split coverage, model accuracy contracts, UI model selection, collector behavior, and audio service contract.
+
+## Repository map
+
+| Path | Contents |
+|---|---|
+| `uno_q_app/` | App Lab application: STM32 sketch, Python service, camera/audio/web UI |
+| `uno_q_fft_candidates/` | Selected and comparison embedded-FFT TFLite artifacts and evaluation report |
+| `uno_q_model_candidates/` | CPU MLP and temporal CNN comparison artifacts |
+| `scripts/` | Deployment, training, conversion, and benchmarking tools |
+| `tests/` | Application, data, and model-contract tests |
+| `docs/` | Current wiring, BOM, evaluation, camera, and build documentation |
+| `docs/assets/hackster/` | Contest-ready diagrams, animation, and figures |
+| `web/assets/simulation/` | Thin-plate, 3D solid, and CalculiX simulation results |
+| `data/position_model_400x300/` | Earlier portable 400 × 300 position-model reference |
+| `pc/`, `firmware/`, `sim/`, `calculix/`, `doc/` | Supporting experiments, analysis tools, and archived reference material |
+
+Use the [documentation index](docs/README.md) to find the shortest path to each subject.
+
+## Contest material
+
+- [Japanese Story preview](docs/hackster-story-ja.html)
+- [Story image placement plan](docs/hackster-story-media-plan.md)
+- [Contest submission checklist](CONTEST_SUBMISSION.md)
+- [Hackster-ready figures](docs/assets/hackster/)
+
+## Credits and licensing
+
+- GeneralUser GS by S. Christian Collins is rendered on UNO Q with FluidSynth. Its full notice is stored at [`uno_q_app/python/soundfonts/LICENSE.GeneralUser-GS.txt`](uno_q_app/python/soundfonts/LICENSE.GeneralUser-GS.txt).
+- TensorFlow Lite/LiteRT, FluidSynth, Arduino App Lab, and the remaining dependencies retain their respective upstream licenses.
+- See [third-party notices](THIRD_PARTY_NOTICES.md) for source links and bundled-asset notes.
+
+The repository currently has no top-level project license declaration. Add one before inviting reuse or accepting outside contributions.

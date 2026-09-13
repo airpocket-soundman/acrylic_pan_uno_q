@@ -1,0 +1,13 @@
+services:
+  ei-video-obj-detection-runner:
+    # USB video node numbers can change between /dev/video0 and /dev/video2
+    # after a power cycle. Omitting --camera lets the runner select the actual
+    # UVC capture device instead of reopening a stale generated device path.
+    command:
+      - --model-file
+      - /models/ootb/ei/lw-face-det.eim
+      - --dont-print-predictions
+      - --mode
+      - streaming
+      - --force-target
+      - --preview-original-resolution

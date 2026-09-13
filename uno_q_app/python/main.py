@@ -9,7 +9,7 @@ from pathlib import Path
 
 from arduino.app_utils import App, Bridge, Logger
 
-from audio_synth import synthesize_note
+from audio_synth import initialize_audio, synthesize_note
 from tflite_position_models import SelectablePositionModels
 from training_manager import PANEL, TrainingManager
 from web_server import start_web_server
@@ -32,7 +32,7 @@ COLLECTION_THRESHOLDS = {"jerk": 350, "level": 100, "confirmation": 1500}
 runtime = {
     "connected": True, "port": "UNO Q internal SPI", "device_mode": "inference",
     "inference_active": True, "sensor_ready": False, "latest_ai": None,
-    "event_count": 0, "sample_rate_hz": SAMPLE_RATE_HZ, "retrigger_guard_ms": 80,
+    "event_count": 0, "sample_rate_hz": SAMPLE_RATE_HZ, "retrigger_guard_ms": 120,
     "last_error": None, "sensor_thresholds": dict(INFERENCE_THRESHOLDS),
     "sampling_sample_count": 0, "sampling_irq_count": 0, "missed_data_ready": 0,
     "read_1000_us": 0, "hardware_cycle_hz": 0,
@@ -147,9 +147,10 @@ def set_retrigger_guard(milliseconds: int) -> dict:
     if not 0 <= milliseconds <= 500:
         raise ValueError("milliseconds must be between 0 and 500")
     # The MCU keeps a dedicated, non-yielding 25.6 kHz loop. Its original
-    # 80 ms guard remains fixed; avoid blocking the web request on an inbound RPC.
+    # The 120 ms guard remains fixed in the MCU to reject sensor ring-down without
+    # blocking this web request on an inbound RPC while its sampling loop is active.
     update_runtime(retrigger_guard_ms=milliseconds)
-    return {"milliseconds": milliseconds, "confirmed": milliseconds == 80}
+    return {"milliseconds": milliseconds, "confirmed": milliseconds == 120}
 
 
 def set_sensor_thresholds(profile: str) -> dict:
@@ -233,8 +234,9 @@ Bridge.provide("on_runtime_status", on_runtime_status)
 Bridge.provide("on_sampling_status", on_sampling_status)
 Bridge.provide("on_capture_sample", on_capture_sample)
 Bridge.provide("on_capture_chunk", on_capture_chunk)
+audio_backend = initialize_audio()
 start_web_server(STATIC_ROOT, get_status, update_runtime, run_demo, training, synthesize_note,
                  set_retrigger_guard, set_sensor_thresholds, wait_for_ai,
-                 select_inference_model)
-logger.info("KX134 acquisition, inference and web UI listening on port 8765")
+                 select_inference_model, audio_backend=audio_backend)
+logger.info(f"KX134 acquisition, inference and web UI listening on port 8765; audio={audio_backend}")
 App.run()

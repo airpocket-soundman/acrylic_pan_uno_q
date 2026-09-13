@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Acrylic Pan - 振動からアクリル板の打点位置を推定する楽器型インターフェース">
-  <title>Acrylic Pan | Engineering Notes</title>
+  <meta name="description" content="ModalTouch - Arduino UNO Qと一点の加速度センサーでアクリル板の打点位置を推定するAI楽器">
+  <title>ModalTouch | Arduino UNO Q AI Instrument</title>
   <link rel="stylesheet" href="web/css/shell.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#overview" data-page="overview" aria-label="Acrylic Pan トップ">
       <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-      <span><strong>ACRYLIC PAN</strong><small>ARDUINO UNO Q PROJECT</small></span>
+      <span><strong>MODALTOUCH</strong><small>ARDUINO UNO Q PROJECT · AI INSTRUMENT</small></span>
     </a>
     <nav class="topnav" aria-label="トップメニュー">
+      <a href="docs/hackster-story-ja.html" target="_blank">応募Story</a>
       <a href="#overview" data-page="overview">概要</a>
       <a href="#bom" data-page="bom">BOM</a>
       <a href="#uno-q-wiring" data-page="uno-q-wiring">センサ配線</a>
@@ -28,7 +29,7 @@
       <a href="#model-report" data-page="model-report">モデル比較</a>
       <a href="#experiment" data-page="experiment">実験</a>
     </nav>
-    <span class="project-state"><i aria-hidden="true"></i> IMPLEMENTATION</span>
+    <span class="project-state"><i aria-hidden="true"></i> CONTEST BUILD</span>
     <button class="menu-button" type="button" aria-label="目次を開く" aria-expanded="false">☰</button>
   </header>
 
@@ -36,6 +37,7 @@
     <aside class="sidebar" aria-label="目次">
       <div class="sidebar-label">CONTENTS</div>
       <nav>
+        <a href="docs/hackster-story-ja.html" target="_blank"><span>00</span><b>Hackster Story</b><small>日本語版・最新構成と評価</small></a>
         <a href="#overview" data-page="overview"><span>01</span><b>プロジェクト概要</b><small>目的・体験・構成</small></a>
         <a href="#hardware" data-page="hardware"><span>02</span><b>ハードウェア</b><small>ボード・センサー仕様</small></a>
         <a href="#bom" data-page="bom"><span>02A</span><b>BOM</b><small>構成部品・調達状態</small></a>
@@ -54,7 +56,7 @@
         <a href="#data-strategy" data-page="data-strategy"><span>06B</span><b>学習データ方針</b><small>移行・追加収録・版管理</small></a>
         <a href="#implementation-plan" data-page="implementation-plan"><span>07</span><b>実装計画</b><small>機能追加順・合格条件・CLI</small></a>
         <a href="#solist-simulator" data-page="solist-simulator"><span>08</span><b>Simulator環境</b><small>8クラスCSV・AI設定・モデル</small></a>
-        <a href="#model-report" data-page="model-report"><span>09</span><b>モデル比較レポート</b><small>旧モデル・新モデル・周波数比較</small></a>
+        <a href="#model-report" data-page="model-report"><span>09</span><b>初期モデル比較</b><small>2026-07-18・履歴資料</small></a>
         <a href="#experiment" data-page="experiment"><span>10</span><b>学習・評価計画</b><small>収録・検証基準</small></a>
         <a href="#references" data-page="references"><span>11</span><b>資料・再現方法</b><small>出典・開発環境</small></a>
       </nav>

@@ -15,7 +15,7 @@ import cv2
 VIEWER = b"""<!doctype html><html lang=\"ja\"><head><meta charset=\"utf-8\">
 <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>PC Camera Stream</title>
 <style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#071018;color:#eaf2f7;font-family:sans-serif}main{display:grid;grid-template-rows:auto 1fr;height:100%;padding:10px;gap:8px}header{display:flex;justify-content:space-between;align-items:center}h1{font-size:16px;margin:0}span{color:#7cf4c1}figure{display:grid;place-items:center;margin:0;min-height:0;overflow:hidden;border-radius:8px;background:#020507}img{display:block;width:100%;height:100%;object-fit:contain;transform:scaleX(-1)}</style>
-</head><body><main><header><h1>PC Camera / MJPEG</h1><span>PC 192.168.50.177</span></header>
+</head><body><main><header><h1>PC Camera / MJPEG</h1><span>Local development utility</span></header>
 <figure><img src=\"/stream.mjpg\" alt=\"PC webcam stream\"></figure></main></body></html>"""
 
 
@@ -125,7 +125,7 @@ def main() -> None:
     camera = Camera(args.camera, args.width, args.height, args.fps, args.quality)
     handler = type("PcCameraHandler", (Handler,), {"camera": camera})
     server = ThreadingHTTPServer((args.host, args.port), handler)
-    print(f"PC camera: http://192.168.50.177:{args.port}/", flush=True)
+    print(f"PC camera: http://127.0.0.1:{args.port}/", flush=True)
     server.serve_forever()
 
 

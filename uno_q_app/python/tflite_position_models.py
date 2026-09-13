@@ -32,7 +32,9 @@ class TflitePositionModel:
         self.parity = np.load(parity_path)
         self.support = np.asarray(self.parity["support_xy_mm"], dtype=np.float32)
         report = json.loads(report_path.read_text(encoding="utf-8"))
-        if model_id == "temporal_fft_ensemble":
+        if model_id == "fft_large":
+            evaluation = report.get("models", {}).get("large", {})
+        elif model_id == "temporal_fft_ensemble":
             evaluation = report.get("ensemble", {})
         elif model_id == "temporal_cnn":
             evaluation = {"architecture": report.get("gpu", {}),
@@ -41,7 +43,7 @@ class TflitePositionModel:
         else:
             evaluation = report.get("models", {}).get("standard", {})
         self.metadata = {"model_id": model_id, "label": label,
-                         "evaluation_limit": report.get("evaluation_limit"),
+                         "evaluation_coverage": report.get("evaluation_coverage"),
                          "evaluation": evaluation}
         self._interpreter = Interpreter(model_path=str(model_path), num_threads=4)
         self._interpreter.allocate_tensors()
@@ -126,6 +128,8 @@ class SelectablePositionModels:
     def __init__(self, model_root: Path, data_root: Path):
         parity = model_root / "parity_cases.npz"
         specifications = (
+            ("fft_large", "FFT大型版（推奨）", "acrylic_pan_fft_hybrid_large_fp16.tflite",
+             "evaluation_report.json", "raw_fft"),
             ("fft_standard", "FFT標準版", "acrylic_pan_fft_hybrid_standard_fp16.tflite",
              "evaluation_report.json", "raw_fft"),
             ("temporal_cnn", "従来CNN版", "acrylic_pan_xy_gpu_fp16.tflite",
@@ -137,12 +141,12 @@ class SelectablePositionModels:
                                                        parity, model_root / report_name, input_kind)
                         for model_id, label, filename, report_name, input_kind in specifications}
         self._config_path = data_root / "config" / "inference_model.json"
-        selected = "fft_standard"
+        selected = "fft_large"
         try:
             selected = json.loads(self._config_path.read_text(encoding="utf-8"))["model_id"]
         except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError):
             pass
-        self._active_id = selected if selected in self._models else "fft_standard"
+        self._active_id = selected if selected in self._models else "fft_large"
         self._lock = threading.RLock()
 
     @property

@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Target = "arduino@192.168.101.85",
+    [string]$Target = "arduino@uno-q.local",
     [int]$WebPort = 8765,
     [int]$CameraPort = 4912,
     [switch]$NoBrowser

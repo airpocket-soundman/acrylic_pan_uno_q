@@ -80,6 +80,8 @@ class PositionWebTests(unittest.TestCase):
         self.assertEqual(result["confidence_level"], 0.0)
 
     def test_live_inference_event_gets_pc_position_metadata(self):
+        if not self.controller.position_estimator.available:
+            self.skipTest("optional PC XY regression artifact is not tracked in Git")
         sample_index = np.arange(512)
         samples = np.rint(6000 * np.sin(2 * np.pi * 900 * sample_index / 25_600)).astype(np.int16)
         outputs = [0.02, 0.05, 0.82, 0.08, 0.01, 0.01, 0.005, 0.005]

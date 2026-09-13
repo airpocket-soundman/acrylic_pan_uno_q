@@ -2,7 +2,7 @@ const $ = id => document.getElementById(id);
 const STORAGE_KEY = 'acrylicPanInstrumentV1';
 const DEFAULT_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5','F5','G5'];
 const MARIO_NOTES = ['E4', 'G4', 'A4', 'A#4', 'B4', 'C5', 'E5', 'G5'].concat(['A5','B5','C6','E6']);
-const DEFAULTS = {instrument:'steel_drum',masterVolume:.70,transpose:0,brightness:.65,attack:.005,decay:.35,sustain:.18,release:.90,echoMix:.18,echoDelay:.18,echoFeedback:.24,velocity:.70,retriggerGuardMs:80,notes:DEFAULT_NOTES};
+const DEFAULTS = {instrument:'steel_drum',masterVolume:.70,transpose:0,brightness:.65,attack:.005,decay:.35,sustain:.18,release:.90,echoMix:.18,echoDelay:.18,echoFeedback:.24,velocity:.70,retriggerGuardMs:120,notes:DEFAULT_NOTES};
 const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 let settings = loadSettings();
 let lastPlayedSequence = null;

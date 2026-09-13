@@ -35,7 +35,7 @@ Copy-Item -LiteralPath (Join-Path $positionModelRoot "parity_cases.npz") -Destin
 Copy-Item -LiteralPath (Join-Path $positionModelRoot "model_metadata.json") -Destination (Join-Path $staging "python\position_metadata.json")
 $tfliteDestination = Join-Path $staging "python\tflite_models"
 New-Item -ItemType Directory -Path $tfliteDestination -Force | Out-Null
-foreach ($file in "acrylic_pan_fft_hybrid_standard_fp16.tflite", "acrylic_pan_temporal_fft_ensemble_fp16.tflite", "parity_cases.npz", "evaluation_report.json") {
+foreach ($file in "acrylic_pan_fft_hybrid_large_fp16.tflite", "acrylic_pan_fft_hybrid_standard_fp16.tflite", "acrylic_pan_temporal_fft_ensemble_fp16.tflite", "parity_cases.npz", "evaluation_report.json") {
     Copy-Item -LiteralPath (Join-Path $fftModelRoot $file) -Destination $tfliteDestination
 }
 Copy-Item -LiteralPath (Join-Path $cnnModelRoot "acrylic_pan_xy_gpu_fp16.tflite") -Destination $tfliteDestination
@@ -62,6 +62,15 @@ if ($exists -eq "yes") {
 }
 & $adb @adbArgs shell "TMPDIR=/tmp arduino-app-cli app start '$remoteApp' --format json"
 if ($LASTEXITCODE -ne 0) { throw "Failed to start the Arduino App." }
+
+& $adb @adbArgs shell "docker exec -u 0 acrylic-pan-dummy-main-1 sh -lc 'apt-get update >/dev/null && apt-get install -y --no-install-recommends libfluidsynth3 >/dev/null && ldconfig && python -m pip install --no-cache-dir pyfluidsynth==1.4.0 >/dev/null && rm -rf /var/lib/apt/lists/*' && docker restart acrylic-pan-dummy-main-1 >/dev/null"
+if ($LASTEXITCODE -ne 0) { throw "Failed to provision the FluidSynth runtime." }
+
+& $adb @adbArgs shell "docker compose -f '$remoteApp/.cache/app-compose.yaml' -f '$remoteApp/.cache/app-compose-overrides.yaml' -f '$remoteApp/camera-autoselect.compose.yaml' up -d --force-recreate --no-deps ei-video-obj-detection-runner >/dev/null"
+if ($LASTEXITCODE -ne 0) { throw "Failed to enable USB camera auto-selection." }
+
+& $adb @adbArgs shell "docker update --restart unless-stopped acrylic-pan-dummy-main-1 acrylic-pan-dummy-ei-video-obj-detection-runner-1 >/dev/null"
+if ($LASTEXITCODE -ne 0) { throw "Failed to enable Acrylic Pan boot autostart." }
 
 if (-not $KeepStaging) { Remove-Item -LiteralPath $staging -Recurse -Force }
 Write-Host "Acrylic Pan XY Instrument App deployed."

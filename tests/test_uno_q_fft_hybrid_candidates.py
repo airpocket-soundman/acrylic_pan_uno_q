@@ -21,18 +21,20 @@ class UnoQFftHybridCandidateTests(unittest.TestCase):
         self.assertEqual(self.report["split"]["strategy"],
                          "whole_session_split_no_event_leakage")
         self.assertEqual(self.report["split"]["counts"],
-                         {"train": 4745, "validation": 480, "test": 1907})
-        self.assertIn("48 of 60", self.report["evaluation_limit"])
+                         {"train": 3545, "validation": 1080, "test": 2507})
+        self.assertEqual(self.report["split"]["position_coverage"],
+                         {"train": 60, "validation": 60, "test": 60})
+        self.assertIn("all 60 positions", self.report["evaluation_coverage"])
 
     def test_standard_fp16_contains_embedded_fft(self):
         self.assertEqual(self.report["selected"],
-                         "acrylic_pan_temporal_fft_ensemble_fp16.tflite")
+                         "acrylic_pan_fft_hybrid_large_fp16.tflite")
         selected = self.report["models"]["standard"]["variants"]["fp16"]
         self.assertIn("RFFT2D", selected["artifact"]["operators"])
         self.assertIn("COMPLEX_ABS", selected["artifact"]["operators"])
-        self.assertGreater(selected["test"]["position_top1_accuracy"], 0.97)
-        self.assertGreater(selected["test"]["area_accuracy_12class"], 0.988)
-        self.assertLess(selected["test"]["map_xy_mean_mm"], 1.7)
+        self.assertGreater(selected["test"]["position_top1_accuracy"], 0.965)
+        self.assertGreater(selected["test"]["area_accuracy_12class"], 0.99)
+        self.assertLess(selected["test"]["map_xy_mean_mm"], 2.2)
         self.assertLess(selected["parity"]["probability_max_abs_delta"], 0.001)
 
         model = CANDIDATES / selected["artifact"]["file"]
@@ -40,28 +42,23 @@ class UnoQFftHybridCandidateTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256(model.read_bytes()).hexdigest(),
             selected["artifact"]["sha256"])
 
-    def test_selected_ensemble_improves_baseline_accuracy(self):
-        ensemble = self.report["ensemble"]
-        self.assertAlmostEqual(ensemble["temporal_weight"], 0.85)
-        self.assertAlmostEqual(ensemble["fft_weight"], 0.15)
-        self.assertGreater(ensemble["test"]["position_top1_accuracy"], 0.9795)
-        self.assertGreater(ensemble["test"]["area_accuracy_12class"], 0.989)
-        self.assertLess(ensemble["test"]["expected_xy_mean_mm"], 1.85)
-        self.assertIn("RFFT2D", ensemble["artifact"]["operators"])
-
-        model = CANDIDATES / ensemble["artifact"]["file"]
-        self.assertEqual(model.stat().st_size, ensemble["artifact"]["bytes"])
-        self.assertEqual(hashlib.sha256(model.read_bytes()).hexdigest(),
-                         ensemble["artifact"]["sha256"])
-
-    def test_larger_model_is_recorded_but_not_selected(self):
+    def test_larger_model_is_selected_for_better_full_grid_generalization(self):
         standard = self.report["models"]["standard"]
         large = self.report["models"]["large"]
         self.assertGreater(large["parameters"], standard["parameters"])
-        self.assertLessEqual(
-            large["variants"]["fp16"]["test"]["position_top1_accuracy"],
-            standard["variants"]["fp16"]["test"]["position_top1_accuracy"],
-        )
+        large_fp16 = large["variants"]["fp16"]
+        standard_fp16 = standard["variants"]["fp16"]
+        self.assertGreater(large_fp16["test"]["position_top1_accuracy"],
+                           standard_fp16["test"]["position_top1_accuracy"])
+        self.assertGreater(large_fp16["test"]["area_accuracy_12class"], .994)
+        self.assertLess(large_fp16["test"]["expected_xy_mean_mm"], 1.8)
+        self.assertLess(large_fp16["test"]["map_xy_mean_mm"], 1.8)
+        self.assertIn("RFFT2D", large_fp16["artifact"]["operators"])
+
+        model = CANDIDATES / large_fp16["artifact"]["file"]
+        self.assertEqual(model.stat().st_size, large_fp16["artifact"]["bytes"])
+        self.assertEqual(hashlib.sha256(model.read_bytes()).hexdigest(),
+                         large_fp16["artifact"]["sha256"])
 
 
 if __name__ == "__main__":

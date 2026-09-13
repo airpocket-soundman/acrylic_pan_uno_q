@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ModalTouch — Arduino UNO Qで動くAIアクリル楽器</title>
+  <style>
+    :root{--ink:#10232e;--muted:#58707c;--navy:#082431;--teal:#07858a;--aqua:#59d4df;--gold:#ffbd4a;--coral:#ff654d;--paper:#f3f7f7;--white:#fff;--line:#cddde1}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Yu Gothic UI","Noto Sans JP",system-ui,sans-serif;line-height:1.9}
+    header{background:linear-gradient(135deg,#071d29,#125061);color:#fff;padding:64px 24px 54px;border-bottom:8px solid var(--gold)}
+    .hero{max-width:1120px;margin:auto;display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}.eyebrow,.kicker{font-size:.78rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--aqua)}
+    h1{font-size:clamp(2.5rem,6vw,5.2rem);line-height:1.02;margin:.2em 0}.lead{font-size:1.18rem;color:#d6edf2;max-width:760px}.hero img{width:100%;border-radius:20px;box-shadow:0 22px 60px #0007}
+    nav{position:sticky;top:0;z-index:10;background:#fffefcdd;backdrop-filter:blur(12px);border-bottom:1px solid var(--line);overflow:auto;white-space:nowrap;padding:11px 20px;text-align:center}nav a{display:inline-block;color:var(--ink);font-size:.84rem;font-weight:700;text-decoration:none;padding:6px 11px;border-radius:999px}nav a:hover{background:#dff4f3;color:#00666a}
+    main{max-width:1040px;margin:0 auto;padding:30px 24px 100px}.notice{background:#fff5d8;border-left:6px solid var(--gold);padding:18px 22px;margin:18px 0 48px;border-radius:10px}.notice strong{color:#8d5200}
+    section{background:var(--white);margin:28px 0;padding:42px clamp(22px,5vw,58px);border:1px solid var(--line);border-radius:22px;box-shadow:0 12px 30px #1038490b;scroll-margin-top:70px}
+    h2{font-size:clamp(1.65rem,4vw,2.6rem);line-height:1.3;margin:0 0 24px;padding-bottom:14px;border-bottom:3px solid var(--gold)}h3{font-size:1.3rem;margin-top:32px;color:#006b70}p{margin:1em 0}ul,ol{padding-left:1.45em}.formula{background:var(--navy);color:#fff;border-radius:12px;padding:20px;text-align:center;font-family:Consolas,monospace;overflow:auto}
+    figure{margin:34px 0}figure img{display:block;width:100%;height:auto;border-radius:15px;border:1px solid var(--line);background:#fff}figcaption{font-size:.86rem;color:var(--muted);line-height:1.6;margin-top:10px}.dark img{border:0;box-shadow:0 12px 30px #071d2933}
+    .placeholder{min-height:230px;border:3px dashed #89abb4;background:repeating-linear-gradient(135deg,#f7fbfb,#f7fbfb 12px,#eef5f5 12px,#eef5f5 24px);border-radius:16px;display:grid;place-items:center;text-align:center;padding:30px;color:#42616d}.placeholder strong{display:block;font-size:1.15rem;color:#0b6e74}.placeholder small{display:block;max-width:650px;margin-top:8px}
+    .split,.metrics,.bom{display:grid;gap:14px}.split{grid-template-columns:repeat(3,1fr)}.metric,.split>div{background:#edf7f7;border:1px solid #c9e2e2;border-radius:14px;padding:19px}.metric b,.split b{display:block;font-size:1.65rem;color:#00747a}.metrics{grid-template-columns:repeat(4,1fr)}
+    table{width:100%;border-collapse:collapse;margin:24px 0;font-size:.92rem}th,td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}thead{background:#e8f5f5}.selected{background:#fff4d2;font-weight:700}
+    .domains{display:grid;grid-template-columns:1fr 1fr;gap:18px}.domain{background:var(--navy);color:#d9edf2;border-radius:16px;padding:24px}.domain h3{color:var(--gold);margin-top:0}.tag{display:inline-block;border-radius:999px;background:var(--aqua);color:#082431;font-size:.75rem;font-weight:800;padding:3px 10px}
+    .bom{grid-template-columns:repeat(2,1fr)}.bom div{background:#f2f7f8;padding:12px 16px;border-radius:10px}.links a{color:#00777c;word-break:break-all}footer{text-align:center;background:var(--navy);color:#adcbd5;padding:34px}
+    @media(max-width:760px){.hero,.domains{grid-template-columns:1fr}.hero img{max-width:420px}.split,.metrics{grid-template-columns:1fr 1fr}.bom{grid-template-columns:1fr}section{padding:30px 20px}}
+    @media(max-width:480px){.split,.metrics{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div><div class="eyebrow">Arduino UNO Q × Edge AI × Physical Computing</div><h1>ModalTouch</h1><p class="lead">一枚のアクリル板に生じる振動を、たった一つの加速度センサーで読み取り、AIが打点座標へ展開する低遅延の楽器兼タンジブルインターフェース。</p></div>
+    <img src="assets/hackster/modal-touch-cover.png" alt="ModalTouchのカバーイメージ">
+  </div>
+</header>
+<nav>
+  <a href="#overview">概要</a><a href="#ai">AIの発想</a><a href="#simulation">事前解析</a><a href="#unoq">UNO Q</a><a href="#hardware">ハードウェア</a><a href="#data">データ</a><a href="#models">モデル</a><a href="#latency">低遅延</a><a href="#camera">カメラ</a><a href="#audio">音源</a><a href="#build">作り方</a>
+</nav>
+<main>
+  <div class="notice"><strong>Hackster Story 日本語プレビュー</strong><br>英語投稿内容と同じ構成を、日本語で確認するためのローカルページです。実機写真と演奏画面は掲載済みです。黄色い点線枠は、公開前にデータ採取画面と実演動画を追加する場所です。</div>
+
+  <section id="overview">
+    <div class="kicker">Overview</div><h2>一枚のアクリル板がAI楽器になる</h2>
+    <div class="placeholder"><div><strong>ここに実機デモ動画を掲載</strong><small>記事の冒頭に置きます。複数のエリアを叩き、AIが打点を判定して UNO Q で生成した音が鳴る様子をワンカットで見せます。</small></div></div>
+    <p>ModalTouchは、400 × 300 × 5 mmのアクリル板を12の演奏エリアとして扱うAI楽器です。各エリアの裏にスイッチを並べる代わりに、中央付近へ固定した一つのKX134-1211加速度センサーだけで、すべての打撃振動を観測します。</p>
+    <p>Arduino UNO Qは、その一点で得た波形から打撃位置を推定し、対応するエリアの音を合成して鳴らします。楽器としての基本機能にカメラは不要です。センシング、AI推論、音声生成、学習データ採取、Webアプリ配信はすべてボード上で完結し、クラウド推論も必要としません。オプションのUVCカメラを接続すると、確率ヒートマップを実物の板へ重ねるAR的な表示をデモ用に追加できます。</p>
+    <p>楽器はこのセンシング方式の応用例の一つで、目的そのものではありません。空間情報のエンコードを板が、デコードをAIが担うため、ゲームや音楽だけでなく、アクセシブルな入力装置、インタラクティブ展示、家具にも同じ方法を使えます。産業分野では、手袋や水に強い密閉型の機械操作パネル、筐体やカバーへの衝撃位置の特定、センサーを並べられない面の位置監視などにも役立ちます。</p>
+    <figure><img src="assets/hackster/web/device-overview.jpg" alt="ModalTouch実機の全体像" loading="lazy"><figcaption>ModalTouch実機。パイプフレームに載せた400 × 300 × 5 mmのアクリル板、裏面中央付近のKX134-1211、手前のArduino UNO Qと外部給電USB-Cハブ。板上の十字は60点の学習位置マーカーです。</figcaption></figure>
+  </section>
+
+  <section id="ai">
+    <div class="kicker">The AI idea</div><h2>一点に圧縮された振動情報を、座標空間へ展開する</h2>
+    <p>アクリル板は剛体のように一様には揺れません。打撃すると、固有の節・腹・周波数・位相・減衰を持つ複数の曲げモードが同時に励起されます。打つ位置が変わると、それぞれのモードへ配分される係数も変化します。打撃位置を <em>p</em>、固定センサー位置を <em>s</em> とすれば、観測波形は概念的に次のように表せます。</p>
+    <div class="formula">a(s, t; p) = Σ<sub>n</sub> φ<sub>n</sub>(p) · φ<sub>n</sub>(s) · h<sub>n</sub>(t)</div>
+    <p>φ<sub>n</sub> は n 番目の振動モードの形です。φ<sub>n</sub>(p) は打点 p でそのモードがどれだけ強く励起されるか、φ<sub>n</sub>(s) は固定したセンサー位置 s でそのモードがどれだけ強く観測されるかを表します。h<sub>n</sub>(t) はそのモード固有の周波数で減衰していく振動、a(s, t; p) はセンサー位置 s で測る加速度で、すべてのモードについて足し合わせます。s は動かないので、打点 p が変わると重み φ<sub>n</sub>(p) の組み合わせだけが変わります。これが、一点の波形に打点位置の情報が残る理由です。なお、この式は打撃力の時間波形を省いた概念的な表現です。</p>
+    <p>センサーは動かなくても、打撃位置によってモードの混合比が変わります。これはエンコーダーとデコーダーの組として捉えられます。アクリル板は物理的なエンコーダーで、平面上の打点位置という2次元の情報を各振動モードへ分配します。さらに各モードはセンサー位置での振幅で重み付けされるため、板はフィルタとしても働き、面全体の情報を一本の時間信号へ圧縮します。ニューラルネットワークはその対になるデコーダーで、この物理的なエンコードを逆にたどり、一点の波形から60点の確率場とXY座標を復元します。これは到達時間差による三角測量ではなく、複数の同期センサーも必要としません。AIは付加機能ではなく、このセンシング方式を成立させる中心技術です。</p>
+    <figure class="dark"><img src="assets/hackster/one-sensor-ai-expansion.png" alt="一点の振動を60位置へ展開するAI処理"><figcaption>一つの固定加速度センサーが位置依存のモード署名を記録し、FFT内蔵ニューラルネットワークが60位置の確率分布とXY座標へ展開します。</figcaption></figure>
+  </section>
+
+  <section id="simulation">
+    <div class="kicker">Simulation before building</div><h2>実機製作の前に、一点観測が成立するかを解析</h2>
+    <p>実データを集める前に、一点の観測波形へ位置情報が残るかをシミュレーションしました。リポジトリには、低〜中次の曲げモードを扱うKirchhoff–Love薄板差分モデル、モード重ね合わせを行う3次元HEX8ソリッド有限要素モデル、さらにCalculiXによるメッシュ・固有振動数・打点・板厚の比較解析を収録しています。</p>
+    <p>シミュレーションではセンサー位置を中央付近に固定し、12エリアの中心を順に加振しました。共通カラースケール上で、星印が打点、ひし形がセンサーです。接着層、センサーボード質量、クランプ摩擦、接触力学は簡略化していますが、目的は異なる打点が一点観測でも異なるモード混合を作ることの確認です。この結果に基づいて実機設計とデータ採取計画を進めました。</p>
+    <p>アクリル板の固定位置は、あえて中心からずらしています。板の中心に対して対称に支持すると、振動モードの形も左右対称になり、ある打点とその鏡像の位置で、中央のセンサーにほぼ同じ波形が現れてしまいます。そこで、センサーは中央付近に置いたまま、固定具で上辺の x = 200～300 mm、100 × 20 mm の帯だけを挟んで固定しました。これで対称性が崩れ、鏡像の位置どうしでもモードの励起の強さが変わるため、どの位置もAIが見分けやすい固有の「振動指紋」を持つようになります。</p>
+    <figure><img src="assets/hackster/acrylic-pan-12-hit-vibration-modes.gif" alt="12打点の振動モードシミュレーション"><figcaption>固定した一つのセンサー位置から見た12打点の振動モード。共通カラースケールにより、位置ごとのモード混合差を比較できます。</figcaption></figure>
+  </section>
+
+  <section id="unoq">
+    <div class="kicker">Why Arduino UNO Q</div><h2>二つの計算領域へ、得意な仕事を分担</h2>
+    <p>UNO QのリアルタイムMCUとLinux MPUへ役割を分けることで、高速で安定したセンシングと、表現力のあるAI・映像・音声処理を同時に実現します。</p>
+    <div class="domains">
+      <div class="domain"><span class="tag">REAL TIME</span><h3>STM32U585側</h3><ul><li>KX134-1211を3.3 V SPIで設定</li><li>5回平均を行わず、Z軸を25.6 kHzで取得</li><li>DWTサイクルカウンターと直接GPIO SPIでジッターを抑制</li><li>打撃検出時に64点のプリトリガを保持し、512点・20 msを記録</li><li>64点×8チャンクへまとめてArduino Bridgeへ送信</li></ul></div>
+      <div class="domain"><span class="tag">LINUX</span><h3>QRB2210側</h3><ul><li>波形イベントの再構成と任意保存</li><li>TensorFlow Lite推論と座標・エリア確率化</li><li>（オプション）UVCカメラの取得とストリーミング</li><li>FluidSynth音源を44.1 kHz WAVとして生成・キャッシュ</li><li>採取・位置推論・演奏ページをWi-Fi配信</li></ul></div>
+    </div>
+    <p>決定論的な高レート取得をセンサーの近くに置き、Linux側のメモリと計算能力を空間推論へ使います。全体は一つのArduino App Labアプリとして構成し、電源投入後に自動起動します。</p>
+    <figure class="dark"><img src="assets/hackster/modal-touch-system-architecture.png" alt="ModalTouchのUNO Qシステム構成"><figcaption>STM32U585が打撃を決定論的に取得し、QRB2210がAI推論、カメラ配信、音声合成、Web配信を担当します。クラウド推論は不要です。</figcaption></figure>
+  </section>
+
+  <section id="hardware">
+    <div class="kicker">Hardware and wiring</div><h2>±32 g・25.6 kHzの加速度センサーをSPI接続</h2>
+    <p><strong>この方式には高速サンプリングが不可欠です。</strong>一点の波形から打点を見分けるには、打撃直後の立ち上がりと、位置によって混合比が変わる高い周波数のモード成分を捉える必要があります。KX134-1211は最大25.6 kHzで出力できるため、20 msのイベントごとに12.8 kHz（ナイキスト周波数）までの成分と、打撃の最初の数ミリ秒を記録できます。モーション検出向けの一般的な数百Hzの出力レートでは、60位置を見分けるためのモード混合の多くが折り返し歪みで失われてしまいます。</p>
+    <p>KX134-1211は±32 g、25.6 kHzで動作させます。3.3 Vデバイスなので、電源へ5 Vを接続してはいけません。キー付き2 × 7ケーブルと変換基板は次のSPI信号を使用します。</p>
+    <ul><li>VDD、IO_VDD → UNO Q 3.3 V</li><li>GND → GND</li><li>nCS → D10 / SS</li><li>SDI → D11 / COPI</li><li>SDO → D12 / CIPO</li><li>SCLK → D13 / SCK</li><li>INT1、INT2 → D2、D3（診断用）</li></ul>
+    <p>リポジトリにはコネクターの向き、ケーブル色、導通確認箇所、変換基板仕様を記載しています。センサーを取り付ける前に、必ず電源を切った状態で導通を確認します。</p>
+    <figure><img src="assets/hackster/uno-q-kx134-wiring.png" alt="UNO QとKX134-1211の配線図"><figcaption>Arduino UNO QとKX134-1211評価ボードを接続する、3.3 V SPI配線の全体図。</figcaption></figure>
+    <figure><img src="assets/hackster/web/kx134-sensor-top.jpg" alt="アクリル板越しに見たKX134-1211評価ボード" loading="lazy"><figcaption>アクリル板の上から見たKX134-1211評価ボード。センサーは板の裏面へ直接固定し、板の曲げ振動をそのまま受け取ります。</figcaption></figure>
+    <figure><img src="assets/hackster/web/kx134-sensor-bottom.jpg" alt="KX134-1211のキー付きコネクター接写" loading="lazy"><figcaption>板の下側から見たセンサー接続部。キー付き2 × 7 IDCコネクターに1番・14番ピンを明記し、ケーブルの逆挿しを防いでいます。</figcaption></figure>
+    <p>UNO Qには安定した5 V / 3 A電源を供給します。デモ用のカメラ表示を使う場合は、外部給電対応USB-Cハブ経由で標準UVCカメラを接続します。カメラはUNO Qから公式App Lab video brick経由で直接取得します。</p>
+    <figure><img src="assets/hackster/web/arduino-uno-q.jpg" alt="Arduino UNO QとUSB-Cハブ" loading="lazy"><figcaption>Arduino UNO Qと外部給電USB-Cハブ。フラットケーブルでKX134へSPI接続し、ハブ経由でUVCカメラと電源を供給します。</figcaption></figure>
+    <h3>マレット</h3>
+    <p>演奏には自作のマレットを使います。木製の丸棒の先端へ柔らかい芯を巻き、輪ゴムで固定しました。硬い打面で板を叩くと高域成分と跳ね返りが強くなるため、適度に柔らかい先端で打撃波形を安定させています。学習データも同じマレットで採取しています。</p>
+    <figure><img src="assets/hackster/web/mallet-overview.jpg" alt="自作マレットの全体" loading="lazy"><figcaption>演奏と学習データ採取に使う自作マレット。</figcaption></figure>
+    <figure><img src="assets/hackster/web/mallet-tip.jpg" alt="マレット先端の接写" loading="lazy"><figcaption>マレット先端。柔らかい芯を輪ゴムで巻き固め、打撃ごとの接触条件をそろえています。</figcaption></figure>
+  </section>
+
+  <section id="data">
+    <div class="kicker">Data collection</div><h2>連続面を学ぶための60アンカー</h2>
+    <p>4 × 3の格子は、12個の100 × 100 mm演奏エリアで構成されます。各エリアから中心1点と四隅寄り4点を採取し、合計60個の空間アンカーを作ります。手作業で再現可能な採取方法を保ちながら、各エリア内部の座標変化を学習できます。</p>
+    <figure><img src="assets/hackster/xy-training-layout.png" alt="12エリアと60学習位置"><figcaption>12エリアそれぞれに中心1点と四隅寄り4点を配置した、400 × 300 mm面上の60学習位置。</figcaption></figure>
+    <p>現在のデータセットは、複数セッション、異なる打撃強度、パネルの再固定を含む7,132打点です。似た波形をランダムに混ぜるのではなく、収録セッションを丸ごと分離しています。</p>
+    <div class="split"><div><span>学習</span><b>3,545</b>7セッション・全60位置</div><div><span>検証</span><b>1,080</b>2セッション・全60位置</div><div><span>独立テスト</span><b>2,507</b>2セッション・全60位置</div></div>
+    <p>検証と独立テストには、それぞれ中央12点の収録セッションと周辺48点の収録セッションを割り当てています。これにより、全60位置を評価しながら、イベントや同一セッションの漏洩を防いでいます。</p>
+    <div class="placeholder"><div><strong>ここにUNO Qデータ採取画面を掲載</strong><small>KX134の512点波形、ラベル位置、採用・削除操作が分かるスクリーンショット。</small></div></div>
+  </section>
+
+  <section id="models">
+    <div class="kicker">Models and independent test</div><h2>時間波形と周波数特徴をモデル内部で融合</h2>
+    <p>各TensorFlow Liteモデルは同じ60位置の確率分布を出力します。透過ヒートマップ、最尤パネル、12エリアの棒グラフはすべてこの一つの分布から計算するため、画面間で結果が食い違いません。確率重み付き座標は滑らかな疑似XY回帰として利用し、別の高容量直接XYヘッドでも連続回帰を検証します。</p>
+    <table><thead><tr><th>モデル</th><th>パラメータ</th><th>FP16</th><th>60位置</th><th>12エリア</th><th>MAP誤差</th><th>Expected XY</th></tr></thead><tbody>
+      <tr><td>時間波形CNN</td><td>約108万</td><td>2.17 MB</td><td>95.45%</td><td>99.36%</td><td>2.63 mm</td><td>2.73 mm</td></tr>
+      <tr><td>FFT hybrid standard</td><td>168万</td><td>3.38 MB</td><td>96.77%</td><td>99.20%</td><td>2.13 mm</td><td>2.70 mm</td></tr>
+      <tr class="selected"><td>FFT hybrid large（採用）</td><td>590万</td><td>11.82 MB</td><td>97.05%</td><td>99.44%</td><td>1.78 mm</td><td>1.76 mm</td></tr>
+      <tr><td>時間＋大型FFT ensemble</td><td>698万</td><td>14.01 MB</td><td>97.01%</td><td>99.44%</td><td>1.89 mm</td><td>1.86 mm</td></tr>
+    </tbody></table>
+    <div class="metrics"><div class="metric"><span>独立テスト</span><b>2,507</b>打点</div><div class="metric"><span>60位置Top-1</span><b>97.05%</b></div><div class="metric"><span>12エリア</span><b>99.44%</b></div><div class="metric"><span>MAP平均誤差</span><b>1.78 mm</b></div></div>
+    <p>大型FFTモデルは、生の512点を入力し、モデル内部でベースライン除去、振幅正規化、Hann窓、実FFTを実行します。時間枝は立ち上がり・残響・減衰を、周波数枝はモードのスペクトル混合を学習します。検証データだけで重みを決めたアンサンブルも試しましたが、独立テストでは大型FFT単体の方がわずかに良かったため、より単純な単体モデルを採用しました。</p>
+  </section>
+
+  <section id="latency">
+    <div class="kicker">Very fast AI inference</div><h2>演奏に必要な応答性をUNO Q上で確保</h2>
+    <p>モデルはQRB2210の起動時に一度だけ読み込み、ウォームアップします。旧候補をUNO Qで測定したwarm API推論は、時間CNNが中央値3.96 ms・p95 4.59 ms、FFT標準版が中央値4.12 ms・最大5.65 ms、旧CNN＋FFTアンサンブルが中央値6.03 ms・最大7.38 msでした。</p>
+    <p>新しい11.82 MBの大型FFTモデルは全60位置評価で選ばれたばかりなので、これら旧候補の実測値をそのまま新モデルの速度としては主張しません。配備後にUNO Q実機で改めてwarm推論遅延を測定します。取得窓は20 msで、64点×8のパック転送、イベント駆動配信、起動時モデルロード、音源キャッシュにより、推論以外の待ち時間も減らしています。</p>
+    <figure class="dark"><img src="assets/hackster/uno-q-low-latency-flow.png" alt="打撃から音と表示までの低遅延フロー"><figcaption>決定論的取得、パック転送、ウォーム済みTFLite、イベント駆動配信、音声キャッシュで遅延クリティカルパスを短縮します。</figcaption></figure>
+  </section>
+
+  <section id="camera">
+    <div class="kicker">Optional camera overlay</div><h2>オプション：確率分布を実物のアクリル面へ重ねる</h2>
+    <p>カメラ表示は、楽器の基本機能ではなくプレゼンテーション用に追加したオプション機能です。カメラがなくても、打点推定、エリア判定、発音はすべて動作します。カメラを使うと、演奏面そのものに次に叩く場所を示したり、結果を重ねて見せたりできるため、ゲーム性の追加や演奏の教示といったAR/MR的な使い方にも広げられます。</p>
+    <p>UNO QはUVCカメラ映像を配信し、Linuxが <code>/dev/videoN</code> を振り直した場合も自動復帰します。ユーザーはアクリル板上の8点を指定し、透視変換で60位置の確率場を実面へ合わせます。透過セル、12エリア格子、勝者の輪郭、推定座標をカメラ映像へ直接表示します。カメラもUNO Qアプリの一部であり、別の推論装置ではありません。</p>
+    <figure><img src="assets/hackster/probability-instrument-ui.png" alt="確率演奏画面とカメラヒートマップ" loading="lazy"><figcaption>確率演奏画面。UNO Q USBカメラ映像のアクリル板へ8点位置合わせで60位置の確率ヒートマップを重ね、C5（エリア5）を99.7%で判定して発音しています。12エリアの棒グラフ、勝者の輪郭、ヒートマップは同じ確率分布から描画します。この画面では比較用のCNN＋FFTアンサンブルを選択しています。</figcaption></figure>
+  </section>
+
+  <section id="audio">
+    <div class="kicker">Audio generated on UNO Q</div><h2>楽器音もUNO Qで生成して配信</h2>
+    <p>UNO Q上のFluidSynthがGeneralUser GS 2.0.3 BETAを44.1 kHzでレンダリングします。5種類の楽器音色と楽曲ガイドモードを用意し、生成済みの音をWAVとしてキャッシュします。ブラウザはUNO Qから受け取った音をデコードして再生するだけで、音源選択と合成はボード側に残ります。</p>
+    <p>SoundFont: S. Christian Collins, “GeneralUser GS SoundFont, rendered on Arduino UNO Q with FluidSynth.”</p>
+    <h3>演奏教示機能</h3>
+    <p>演奏補助モードを使うと、この楽器は音楽を教える道具にもなります。曲を選ぶと、12エリアがその曲で使う音だけに低い順で割り当て直されます。画面では次に叩くエリアと、その次のエリア（薄い色）を強調し、次の音名・エリア番号・曲の進み具合を表示します。AIが正しいエリアへの打撃を判定したときだけ次へ進むため、一打ごとにセンシングの全工程が試されます。「手本演奏」ボタンを押すと、楽譜どおりのリズムとテンポでUNO Qが旋律を先に演奏するので、聴いてから演奏できます。この機能はWeb画面だけで動作し、オプションのカメラを使うと、同じ「次」「その次」の目印をアクリル板の上へAR的に重ねて表示できます。自由演奏では、12エリアがC～Bの半音階になります。</p>
+    <p>対応曲（いずれも16小節の旋律）：</p>
+    <ul><li>エリーゼのために（ベートーヴェン）</li><li>歓喜の歌（ベートーヴェン）</li><li>メヌエット ト長調（ペツォールト）</li><li>子守歌 作品49-4（ブラームス）</li><li>アメイジング・グレイス（伝承曲）</li><li>オールド・ラング・サイン（伝承曲）</li><li>フレール・ジャック（伝承曲）</li><li>コロベイニキ（ロシア民謡）</li></ul>
+  </section>
+
+  <section id="build">
+    <div class="kicker">Build and run</div><h2>電源投入から演奏まで</h2>
+    <ol><li>400 × 300 × 5 mmのアクリル板を、資料どおりの形状で固定します。</li><li>KX134-1211を中央付近へ、向きと機械結合を再現できる方法で取り付けます。</li><li>キー付き変換ケーブルを製作し、電源を切ったまま全信号の導通を測ります。</li><li>UNO Qへ5 V / 3 A電源を接続します（カメラ表示を使う場合は、外部給電USB-CハブとUVCカメラも接続）。</li><li>Arduino App Labでプロジェクトを開き、UNO Qへ配備します。</li><li>再起動後、healthページで <code>WHO_AM_I = 0x46</code>、<code>sensor_ready = true</code>、25.6 kHz取得を確認します。</li><li>同じWi-Fi上の端末から演奏ページを開きます。</li><li>音声制限を解除するため演奏開始を一度押し、12エリアを打撃します。</li><li>（オプション）カメラ表示を使う場合は、8点カメラ位置合わせを実行します。</li><li>新規データ採取時はラベル付きセッションを開始し、各波形を確認して不採用イベントだけを削除します。</li></ol>
+    <h3>部品表</h3><div class="bom"><div>Arduino UNO Q</div><div>KX134-1211評価ボード</div><div>400 × 300 × 5 mmアクリル板</div><div>3Dプリンター製のアクリル板固定用ブラケット</div><div>支持フレーム用のパイプ材（長さは適宜）</div><div>2 × 7キー付きIDCケーブル</div><div>UNO Q–KX134 3.3 V SPI変換基板</div><div>（オプション）外部給電USB-Cハブ</div><div>（オプション）標準UVC USBカメラ</div><div>安定化5 V / 3 A USB-C電源</div><div>自作マレット（木製丸棒・柔らかい芯・輪ゴム）</div><div>配線材・ピンヘッダー・固定テープまたは接着剤</div><div>マルチメーター・はんだ付け工具</div></div>
+  </section>
+
+  <section class="links">
+    <div class="kicker">Reproducibility</div><h2>ソースと再現資料</h2>
+    <p>Arduino App Lab構成、STM32取得ファームウェア、Linux推論サービス、学習済みモデル、Web UI、テスト、シミュレーション、BOM、配線資料を公開します。</p>
+    <p><a href="https://github.com/airpocket-soundman/acrylic_pan_uno_q">https://github.com/airpocket-soundman/acrylic_pan_uno_q</a></p>
+    <p><a href="https://github.com/airpocket-soundman/acrylic_pan_uno_q/tree/main/web/assets/simulation">シミュレーション資産</a></p>
+    <h3>このプロジェクトの意味</h3><p>ModalTouchが示すのは、「物理構造に空間情報を振動モードとしてエンコードさせ、保護された一点で圧縮された信号を取得し、通常ならセンサー配列が必要な空間状態をエッジAIでデコードする」という汎用的なセンシング方法です。この「物理エンコーダー＋AIデコーダー」の考え方はゲームや音楽に限らず、パネル、筐体、机、機械のカバーを位置を感知するセンサーに変え、HMI、検査、衝撃監視といった産業用途にも応用できます。物理面は単純なまま、エリア、信頼度判定、表示、音の振る舞いをソフトウェアで定義できます。UNO Qは、この逆問題をオフライン解析ではなく、演奏可能なリアルタイム体験として成立させます。</p>
+  </section>
+</main>
+<footer>ModalTouch — Japanese Hackster Story Preview · Arduino UNO Q Project</footer>
+</body>
+</html>

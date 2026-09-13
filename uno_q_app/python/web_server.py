@@ -16,6 +16,7 @@ class Handler(SimpleHTTPRequestHandler):
     run_demo: object
     training: object
     synthesize_audio: object
+    audio_backend: str = "UNO-Q"
     set_retrigger_guard: object
     set_sensor_thresholds: object
     wait_for_ai: object
@@ -56,7 +57,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "audio/wav")
             self.send_header("Cache-Control", "public, max-age=3600")
-            self.send_header("X-Audio-Synth", "UNO-Q")
+            self.send_header("X-Audio-Synth", self.audio_backend)
             self.send_header("X-Audio-Cache", "hit" if cache_hit else "miss")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers(); self.wfile.write(body); return
@@ -129,11 +130,12 @@ class Handler(SimpleHTTPRequestHandler):
 
 def start_web_server(static_root: Path, get_status, update_runtime, run_demo, training,
                      synthesize_audio, set_retrigger_guard, set_sensor_thresholds,
-                     wait_for_ai, select_inference_model, port: int = 8765):
+                     wait_for_ai, select_inference_model, port: int = 8765,
+                     audio_backend: str = "UNO-Q"):
     handler = type("AcrylicPanHandler", (Handler,), {"static_root": static_root,
         "get_status": staticmethod(get_status), "update_runtime": staticmethod(update_runtime),
         "run_demo": staticmethod(run_demo), "training": training,
-        "synthesize_audio": staticmethod(synthesize_audio),
+        "synthesize_audio": staticmethod(synthesize_audio), "audio_backend": audio_backend,
         "set_retrigger_guard": staticmethod(set_retrigger_guard),
         "set_sensor_thresholds": staticmethod(set_sensor_thresholds),
         "wait_for_ai": staticmethod(wait_for_ai),

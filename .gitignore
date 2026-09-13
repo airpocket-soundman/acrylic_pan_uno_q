@@ -1,14 +1,34 @@
 __pycache__/
 *.py[cod]
+*.pyo
 *.obj
 .venv/
 tmp/
 .local/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*.bak
+*.tmp
 
 # Raw captures and generated models can become large.
 data/raw/
 data/*.log
 artifacts/
+checkpoints/
+*.h5
+*.ckpt
+*.ckpt.index
+*.ckpt.data-*
 
 # Large reproducible CalculiX high-frequency solver intermediates.
 web/assets/simulation/calculix-highfreq/*.eig
@@ -33,3 +53,6 @@ web/assets/simulation/calculix-xy-grid/spooles.out
 solist-ai/
 uno_q_app/.cache/
 uno_q_app/data/captures/
+
+# Generated single-file story preview (rebuild with scripts/build_hackster_story_standalone.py)
+docs/hackster-story-ja.standalone.html

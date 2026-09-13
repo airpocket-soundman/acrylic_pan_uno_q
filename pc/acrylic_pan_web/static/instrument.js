@@ -249,9 +249,8 @@ async function inferenceLoop(){
   if(inferenceLoopRunning)return;inferenceLoopRunning=true;
   while(inferenceLoopRunning){
     if(!performanceEnabled){await new Promise(resolve=>setTimeout(resolve,50));continue;}
-    try{const result=await api('/api/ai/latest');if(result.sequence!==undefined&&result.sequence!==lastPlayedSequence){lastPlayedSequence=result.sequence;const area=Number(result.predicted_class),score=Math.max(...result.outputs.map(Number));renderScores(result.outputs);playArea(area,score,false);$('error').textContent='';}}
+    try{const after=lastPlayedSequence===null?'':String(lastPlayedSequence),result=await api(`/api/ai/wait?after=${encodeURIComponent(after)}&timeout=1.0`);if(result.sequence!==undefined&&result.sequence!==lastPlayedSequence){lastPlayedSequence=result.sequence;const area=Number(result.predicted_class),score=Math.max(...result.outputs.map(Number));renderScores(result.outputs);playArea(area,score,false);$('error').textContent='';}}
     catch(error){$('error').textContent=error.message;}
-    await new Promise(resolve=>setTimeout(resolve,20));
   }
 }
 async function startPerformance(){try{await ensureAudio();const current=await api('/api/status');lastPlayedSequence=current.latest_ai?current.latest_ai.sequence:null;await api('/api/inference/retrigger',{milliseconds:Number(settings.retriggerGuardMs)});await api('/api/inference/start',{mode:'instrument'});performanceEnabled=true;$('instrumentStatus').textContent='高速演奏中です。アクリル板を連続してたたけます。';$('instrumentStatus').classList.add('playing');$('error').textContent='';await refreshStatus();}catch(error){$('error').textContent=error.message;}}

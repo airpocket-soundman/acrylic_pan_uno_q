@@ -5,7 +5,7 @@
     "fp32": {
       "file": "acrylic_pan_xy_gpu_fp32.tflite",
       "bytes": 4337396,
-      "sha256": "37b17ea405fc029facd7cfaa64c9f149c2623c19bae8c08c4bf8dfd263faaa40",
+      "sha256": "c191589fb06933617946a65c64620a70469acdd2e8a8c959a831277d9b006d82",
       "input": {
         "name": "waveform_448x3",
         "shape": [
@@ -51,7 +51,7 @@
     "fp16": {
       "file": "acrylic_pan_xy_gpu_fp16.tflite",
       "bytes": 2174572,
-      "sha256": "64db6dcf0298a5ac5f851787bb5b13bf30dd245f9f4f3e0cffdb45b87acba612",
+      "sha256": "c931f43005c51797dd6aa0c13ff90c52a1370f35fd1543e9fe1a75d4ff419b17",
       "input": {
         "name": "waveform_448x3",
         "shape": [
@@ -113,32 +113,32 @@
   },
   "test": {
     "gpu_fp32": {
-      "sample_count": 1907,
-      "position_top1_accuracy": 0.9795490298898794,
-      "area_accuracy_12class": 0.9884635553224961,
-      "nll": 0.13703714311122894,
-      "brier_score": 0.03028116342496208,
-      "ece": 0.009276510378923054,
-      "direct_xy_mean_mm": 13.994373321533203,
-      "direct_xy_median_mm": 10.495036125183105,
-      "direct_xy_p90_mm": 26.277774810791016,
-      "direct_xy_p95_mm": 35.747989654541016,
-      "expected_xy_mean_mm": 1.8589973449707031,
-      "map_xy_mean_mm": 1.9076008796691895
+      "sample_count": 2507,
+      "position_top1_accuracy": 0.9545273234942162,
+      "area_accuracy_12class": 0.9936178699641005,
+      "nll": 0.178734689950943,
+      "brier_score": 0.06730009505165942,
+      "ece": 0.01837383699835559,
+      "direct_xy_mean_mm": 17.74376106262207,
+      "direct_xy_median_mm": 13.744231224060059,
+      "direct_xy_p90_mm": 33.59687805175781,
+      "direct_xy_p95_mm": 45.98402404785156,
+      "expected_xy_mean_mm": 2.7352728843688965,
+      "map_xy_mean_mm": 2.6267998218536377
     },
     "gpu_fp16": {
-      "sample_count": 1907,
-      "position_top1_accuracy": 0.9795490298898794,
-      "area_accuracy_12class": 0.9884635553224961,
-      "nll": 0.13703060150146484,
-      "brier_score": 0.030279549206963203,
-      "ece": 0.00927495420385415,
-      "direct_xy_mean_mm": 13.99766731262207,
-      "direct_xy_median_mm": 10.485939979553223,
-      "direct_xy_p90_mm": 26.282840728759766,
-      "direct_xy_p95_mm": 35.72100067138672,
-      "expected_xy_mean_mm": 1.8588706254959106,
-      "map_xy_mean_mm": 1.9076008796691895
+      "sample_count": 2507,
+      "position_top1_accuracy": 0.9545273234942162,
+      "area_accuracy_12class": 0.9936178699641005,
+      "nll": 0.17873241007328033,
+      "brier_score": 0.06729738392208898,
+      "ece": 0.018376755616937822,
+      "direct_xy_mean_mm": 17.72588539123535,
+      "direct_xy_median_mm": 13.734025001525879,
+      "direct_xy_p90_mm": 33.56305694580078,
+      "direct_xy_p95_mm": 45.918182373046875,
+      "expected_xy_mean_mm": 2.734898805618286,
+      "map_xy_mean_mm": 2.6267998218536377
     }
   },
   "delegate_status": "requires verification on UNO Q; PC conversion does not prove OpenCL delegation"

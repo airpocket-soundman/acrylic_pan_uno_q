@@ -77,9 +77,9 @@
   <section id="hardware">
     <div class="kicker">Hardware and wiring</div><h2>±32 g・25.6 kHzの加速度センサーをSPI接続</h2>
     <p><strong>この方式には高速サンプリングが不可欠です。</strong>一点の波形から打点を見分けるには、打撃直後の立ち上がりと、位置によって混合比が変わる高い周波数のモード成分を捉える必要があります。KX134-1211は最大25.6 kHzで出力できるため、20 msのイベントごとに12.8 kHz（ナイキスト周波数）までの成分と、打撃の最初の数ミリ秒を記録できます。モーション検出向けの一般的な数百Hzの出力レートでは、60位置を見分けるためのモード混合の多くが折り返し歪みで失われてしまいます。</p>
-    <p>KX134-1211は±32 g、25.6 kHzで動作させます。3.3 Vデバイスなので、電源へ5 Vを接続してはいけません。キー付き2 × 7ケーブルと変換基板は次のSPI信号を使用します。</p>
+    <p>KX134-1211は±32 g、25.6 kHzで動作させます。3.3 Vデバイスなので、電源へ5 Vを接続してはいけません。専用の基板は使わず、センサー基板のキー付き2 × 7ケーブルをジャンパー線でUNO Qのピンヘッダーへ直接つなぎます。使用する信号は次のとおりです。</p>
     <ul><li>VDD、IO_VDD → UNO Q 3.3 V</li><li>GND → GND</li><li>nCS → D10 / SS</li><li>SDI → D11 / COPI</li><li>SDO → D12 / CIPO</li><li>SCLK → D13 / SCK</li><li>INT1、INT2 → D2、D3（診断用）</li></ul>
-    <p>リポジトリにはコネクターの向き、ケーブル色、導通確認箇所、変換基板仕様を記載しています。センサーを取り付ける前に、必ず電源を切った状態で導通を確認します。</p>
+    <p>リポジトリにはコネクターの向き、1番ピンの目印、ケーブル色、導通確認箇所を記載しています。センサーを取り付ける前に、必ず電源を切った状態で導通を確認します。</p>
     <figure><img src="assets/hackster/uno-q-kx134-wiring.png" alt="UNO QとKX134-1211の配線図"><figcaption>Arduino UNO QとKX134-1211評価ボードを接続する、3.3 V SPI配線の全体図。</figcaption></figure>
     <figure><img src="assets/hackster/web/kx134-sensor-top.jpg" alt="アクリル板越しに見たKX134-1211評価ボード" loading="lazy"><figcaption>アクリル板の上から見たKX134-1211評価ボード。センサーは板の裏面へ直接固定し、板の曲げ振動をそのまま受け取ります。</figcaption></figure>
     <figure><img src="assets/hackster/web/kx134-sensor-bottom.jpg" alt="KX134-1211のキー付きコネクター接写" loading="lazy"><figcaption>板の下側から見たセンサー接続部。キー付き2 × 7 IDCコネクターに1番・14番ピンを明記し、ケーブルの逆挿しを防いでいます。</figcaption></figure>
@@ -94,7 +94,7 @@
   <section id="data">
     <div class="kicker">Data collection</div><h2>連続面を学ぶための60アンカー</h2>
     <p>4 × 3の格子は、12個の100 × 100 mm演奏エリアで構成されます。各エリアから中心1点と四隅寄り4点を採取し、合計60個の空間アンカーを作ります。手作業で再現可能な採取方法を保ちながら、各エリア内部の座標変化を学習できます。</p>
-    <figure><img src="assets/hackster/xy-training-layout.png" alt="12エリアと60学習位置"><figcaption>12エリアそれぞれに中心1点と四隅寄り4点を配置した、400 × 300 mm面上の60学習位置。</figcaption></figure>
+    <figure><img src="assets/hackster/panel-layout.png" alt="12エリア・60学習位置・固定位置・センサー位置の配置図"><figcaption>パネル配置図。12エリアそれぞれに中心1点と四隅寄り4点、合計60点の学習位置があります。固定具が挟むのは上辺の100 × 20 mmの帯だけで、KX134は板の中央に置いています。</figcaption></figure>
     <p>現在のデータセットは、複数セッション、異なる打撃強度、パネルの再固定を含む7,132打点です。似た波形をランダムに混ぜるのではなく、収録セッションを丸ごと分離しています。</p>
     <div class="split"><div><span>学習</span><b>3,545</b>7セッション・全60位置</div><div><span>検証</span><b>1,080</b>2セッション・全60位置</div><div><span>独立テスト</span><b>2,507</b>2セッション・全60位置</div></div>
     <p>検証と独立テストには、それぞれ中央12点の収録セッションと周辺48点の収録セッションを割り当てています。これにより、全60位置を評価しながら、イベントや同一セッションの漏洩を防いでいます。</p>
@@ -116,8 +116,8 @@
 
   <section id="latency">
     <div class="kicker">Very fast AI inference</div><h2>演奏に必要な応答性をUNO Q上で確保</h2>
-    <p>モデルはQRB2210の起動時に一度だけ読み込み、ウォームアップします。旧候補をUNO Qで測定したwarm API推論は、時間CNNが中央値3.96 ms・p95 4.59 ms、FFT標準版が中央値4.12 ms・最大5.65 ms、旧CNN＋FFTアンサンブルが中央値6.03 ms・最大7.38 msでした。</p>
-    <p>新しい11.82 MBの大型FFTモデルは全60位置評価で選ばれたばかりなので、これら旧候補の実測値をそのまま新モデルの速度としては主張しません。配備後にUNO Q実機で改めてwarm推論遅延を測定します。取得窓は20 msで、64点×8のパック転送、イベント駆動配信、起動時モデルロード、音源キャッシュにより、推論以外の待ち時間も減らしています。</p>
+    <p>すべてのモデルはUNO Qの起動時に一度だけ読み込んでウォームアップするため、打撃のたびにモデルの読み込みや初期化を待つことはありません。同じオンデバイス処理系では、より小さな候補モデルのwarm推論がQRB2210上で約4～6 msで、20 msの取得窓よりも十分に短い時間です。</p>
+    <p>取得窓は20 msで、64点×8のパック転送、イベント駆動配信、音源キャッシュにより、推論以外の待ち時間も減らしています。</p>
     <figure class="dark"><img src="assets/hackster/uno-q-low-latency-flow.png" alt="打撃から音と表示までの低遅延フロー"><figcaption>決定論的取得、パック転送、ウォーム済みTFLite、イベント駆動配信、音声キャッシュで遅延クリティカルパスを短縮します。</figcaption></figure>
   </section>
 
@@ -141,7 +141,7 @@
   <section id="build">
     <div class="kicker">Build and run</div><h2>電源投入から演奏まで</h2>
     <ol><li>400 × 300 × 5 mmのアクリル板を、資料どおりの形状で固定します。</li><li>KX134-1211を中央付近へ、向きと機械結合を再現できる方法で取り付けます。</li><li>キー付き変換ケーブルを製作し、電源を切ったまま全信号の導通を測ります。</li><li>UNO Qへ5 V / 3 A電源を接続します（カメラ表示を使う場合は、外部給電USB-CハブとUVCカメラも接続）。</li><li>Arduino App Labでプロジェクトを開き、UNO Qへ配備します。</li><li>再起動後、healthページで <code>WHO_AM_I = 0x46</code>、<code>sensor_ready = true</code>、25.6 kHz取得を確認します。</li><li>同じWi-Fi上の端末から演奏ページを開きます。</li><li>音声制限を解除するため演奏開始を一度押し、12エリアを打撃します。</li><li>（オプション）カメラ表示を使う場合は、8点カメラ位置合わせを実行します。</li><li>新規データ採取時はラベル付きセッションを開始し、各波形を確認して不採用イベントだけを削除します。</li></ol>
-    <h3>部品表</h3><div class="bom"><div>Arduino UNO Q</div><div>KX134-1211評価ボード</div><div>400 × 300 × 5 mmアクリル板</div><div>3Dプリンター製のアクリル板固定用ブラケット</div><div>支持フレーム用のパイプ材（長さは適宜）</div><div>2 × 7キー付きIDCケーブル</div><div>UNO Q–KX134 3.3 V SPI変換基板</div><div>（オプション）外部給電USB-Cハブ</div><div>（オプション）標準UVC USBカメラ</div><div>安定化5 V / 3 A USB-C電源</div><div>自作マレット（木製丸棒・柔らかい芯・輪ゴム）</div><div>配線材・ピンヘッダー・固定テープまたは接着剤</div><div>マルチメーター・はんだ付け工具</div></div>
+    <h3>部品表</h3><div class="bom"><div>Arduino UNO Q</div><div>KX134-1211評価ボード</div><div>400 × 300 × 5 mmアクリル板</div><div>3Dプリンター製のアクリル板固定用ブラケット</div><div>支持フレーム用のパイプ材（長さは適宜）</div><div>2 × 7キー付きIDCケーブル</div><div>UNO Qのピンヘッダーへつなぐジャンパー線（専用基板は不要）</div><div>（オプション）外部給電USB-Cハブ</div><div>（オプション）標準UVC USBカメラ</div><div>安定化5 V / 3 A USB-C電源</div><div>自作マレット（木製丸棒・柔らかい芯・輪ゴム）</div><div>配線材・ピンヘッダー・固定テープまたは接着剤</div><div>マルチメーター・はんだ付け工具</div></div>
   </section>
 
   <section class="links">

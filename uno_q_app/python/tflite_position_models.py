@@ -1,3 +1,13 @@
+"""TensorFlow Lite position models used by the UNO Q Linux app.
+
+Every model takes one 512-sample KX134 Z-axis event and returns a 60-way
+probability over the anchor positions plus an auxiliary normalised XY guess.
+``predict_samples`` turns that into the app's result: the most likely anchor
+(MAP), the probability-weighted expected XY, the 12-area index, a 90 %
+credible set and the spatial spread of the distribution. The graph, the
+winning area and the heat map are all drawn from this one distribution.
+"""
+
 from __future__ import annotations
 
 import json
@@ -60,6 +70,9 @@ class TflitePositionModel:
         waveform = np.asarray(samples, dtype=np.float32)
         if waveform.shape != (512,):
             raise ValueError(f"Expected 512 samples, got {waveform.size}")
+        # Embedded-FFT models take the raw 512 samples and do baseline removal,
+        # normalisation and the Hann-windowed RFFT inside the TFLite graph. Only
+        # the legacy temporal CNN needs its three input channels built here.
         if self.input_kind == "temporal_cnn":
             baseline = float(waveform[:64].mean())
             post = waveform[64:] - baseline
@@ -83,15 +96,21 @@ class TflitePositionModel:
     def predict_samples(self, samples) -> dict:
         started = perf_counter_ns()
         probability, direct_xy = self._invoke(samples)
+        # Clamp and renormalise so the 60 outputs form a proper distribution.
         probability = np.maximum(probability, 0.0)
         probability /= max(float(probability.sum()), 1e-12)
+        # Expected XY: probability-weighted mean of the anchor coordinates.
         expected_xy = probability @ self.support
+        # MAP: the single most likely anchor.
         map_index = int(np.argmax(probability))
         map_xy = self.support[map_index]
+        # Smallest set of anchors that together hold 90 % of the probability.
         order = np.argsort(probability)[::-1]
         count = int(np.searchsorted(np.cumsum(probability[order]), 0.90) + 1)
+        # Spread of the distribution around the expected XY, reported as sigma.
         residual = self.support - expected_xy
         covariance = np.einsum("n,ni,nj->ij", probability, residual, residual)
+        # Area index of the MAP anchor on the 4-column x 3-row, 100 mm grid.
         zone = int(np.clip(map_xy[1] // 100, 0, 2) * 4 + np.clip(map_xy[0] // 100, 0, 3))
         return {
             "x_mm": float(map_xy[0]), "y_mm": float(map_xy[1]),

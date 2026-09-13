@@ -1,3 +1,17 @@
+// ModalTouch acquisition firmware for the Arduino UNO Q STM32U585 (MCU side).
+//
+// - Reads the KX134-1211 Z axis over SPI at 25.6 kHz, one sample every
+//   39.0625 us, scheduled by the DWT cycle counter instead of an interrupt.
+// - ApanCapture keeps 64 pre-trigger samples and, once the jerk / level /
+//   confirmation thresholds detect a strike, completes a 512-sample (20 ms)
+//   event.
+// - Each event goes to the Linux side through Arduino Bridge as eight packed
+//   64-sample chunks ("on_capture_chunk"). A 120 ms re-trigger guard drops the
+//   ring-down of the same strike.
+//
+// Pins: D10 CS, D11 COPI, D12 CIPO, D13 SCK, D2 INT1 (diagnostic only).
+// The KX134 is a 3.3 V device; never power it from 5 V.
+
 #include <Arduino_RouterBridge.h>
 #include <MsgPack.h>
 #include <limits.h>
@@ -97,6 +111,8 @@ void setup() {
   pinMode(INT_PIN, INPUT);
   sensorReady = sensor.begin();
   if (sensorReady) {
+    // Time 1,000 SPI reads for the status report, then enable the DWT cycle
+    // counter that schedules every sample.
     sensor.readZ();
     const uint32_t benchmarkStarted = micros();
     for (size_t i = 0; i < 1000; ++i) sensor.readZ();
@@ -130,6 +146,8 @@ void loop() {
   while (sensorReady) {
     const uint32_t nowCycle = DWT->CYCCNT;
     if (static_cast<int32_t>(nowCycle - nextSampleCycle) >= 0) {
+      // If the loop fell behind by whole sample periods, count them as missed
+      // (reported as missed_data_ready) and resynchronise instead of bursting.
       const uint32_t lateCycles = nowCycle - nextSampleCycle;
       if (lateCycles >= samplePeriodCycles) {
         missedDataReady += lateCycles / samplePeriodCycles;

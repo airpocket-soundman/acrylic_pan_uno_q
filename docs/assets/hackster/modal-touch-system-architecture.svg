@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">ModalTouch system architecture</title>
+  <desc id="desc">A strike on the acrylic panel is captured by one accelerometer, processed by the two compute domains of Arduino UNO Q, and delivered as a camera heat map and sound in a web browser.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#071d29"/><stop offset="1" stop-color="#103849"/></linearGradient>
+    <linearGradient id="board" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#138b8d"/><stop offset="1" stop-color="#07676d"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".28"/></filter>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0 0L12 6L0 12Z" fill="#ffbd4a"/></marker>
+    <style>
+      .h{font:700 42px Arial,sans-serif;fill:#fff;letter-spacing:1px}.sub{font:22px Arial,sans-serif;fill:#a8c6d2}.label{font:700 27px Arial,sans-serif;fill:#fff}.body{font:20px Arial,sans-serif;fill:#d9edf2}.small{font:18px Arial,sans-serif;fill:#a8c6d2}.tag{font:700 17px Arial,sans-serif;fill:#071d29}.line{fill:none;stroke:#ffbd4a;stroke-width:7;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="80" y="78" class="h">MODALTOUCH — COMPLETE ON-BOARD SYSTEM</text>
+  <text x="80" y="116" class="sub">One sensor • two UNO Q compute domains • one self-contained musical instrument</text>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="195" width="355" height="500" rx="30" fill="#123241" stroke="#58d4df" stroke-width="3"/>
+    <text x="105" y="245" class="label">PHYSICAL SURFACE</text>
+    <rect x="105" y="285" width="285" height="215" rx="18" fill="#d9f1f4" opacity=".93"/>
+    <g stroke="#4a8996" stroke-width="3" opacity=".85"><path d="M176 285v215M247 285v215M318 285v215M105 357h285M105 429h285"/></g>
+    <circle cx="250" cy="395" r="18" fill="#ff644d"/><path d="M250 337v38M218 369h64" stroke="#ff644d" stroke-width="8" stroke-linecap="round"/>
+    <rect x="222" y="466" width="56" height="24" rx="5" fill="#17a8ad"/><text x="105" y="548" class="body">400 × 300 × 5 mm acrylic</text>
+    <text x="105" y="583" class="body">KX134-1211 • ±32 g</text>
+    <text x="105" y="618" class="body">25.6 kHz • 512 samples</text>
+    <text x="105" y="653" class="small">A single protected sensing point</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="550" y="155" width="550" height="620" rx="38" fill="url(#board)" stroke="#65e3d3" stroke-width="4"/>
+    <text x="600" y="215" class="label">ARDUINO UNO Q</text>
+    <rect x="600" y="260" width="450" height="190" rx="22" fill="#0b2633"/>
+    <rect x="620" y="282" width="145" height="38" rx="19" fill="#ffbd4a"/><text x="645" y="308" class="tag">REAL TIME</text>
+    <text x="620" y="357" class="label">STM32U585 MCU</text>
+    <text x="620" y="394" class="body">SPI sampling • trigger • pre-buffer</text>
+    <text x="620" y="425" class="small">Deterministic 20 ms impact capture</text>
+    <path d="M825 460v55" class="line"/>
+    <rect x="600" y="515" width="450" height="205" rx="22" fill="#0b2633"/>
+    <rect x="620" y="537" width="110" height="38" rx="19" fill="#62d7e2"/><text x="649" y="563" class="tag">LINUX</text>
+    <text x="620" y="612" class="label">QRB2210 MPU</text>
+    <text x="620" y="649" class="body">TFLite FFT AI • UVC camera</text>
+    <text x="620" y="680" class="body">FluidSynth audio • Wi-Fi web server</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1225" y="195" width="305" height="500" rx="30" fill="#123241" stroke="#58d4df" stroke-width="3"/>
+    <text x="1260" y="245" class="label">WEB EXPERIENCE</text>
+    <rect x="1260" y="285" width="235" height="160" rx="14" fill="#d7e7ec"/>
+    <rect x="1280" y="305" width="195" height="120" rx="8" fill="#365866"/>
+    <g opacity=".8"><rect x="1300" y="325" width="42" height="34" fill="#40b5d0"/><rect x="1344" y="325" width="42" height="34" fill="#f4be3e"/><rect x="1388" y="325" width="42" height="34" fill="#f06b45"/><rect x="1432" y="325" width="23" height="34" fill="#ce3d58"/><rect x="1300" y="361" width="42" height="34" fill="#266c9b"/><rect x="1344" y="361" width="42" height="34" fill="#34a989"/><rect x="1388" y="361" width="42" height="34" fill="#ff7b3f"/><rect x="1432" y="361" width="23" height="34" fill="#f4be3e"/></g>
+    <text x="1260" y="500" class="body">Camera-mapped heat map</text>
+    <text x="1260" y="535" class="body">60-position probability</text>
+    <text x="1260" y="570" class="body">12 playable areas</text>
+    <text x="1260" y="605" class="body">Cached 44.1 kHz sound</text>
+    <text x="1260" y="650" class="small">Browser renders and plays</text>
+  </g>
+
+  <path d="M425 430H545" class="line"/><text x="445" y="407" class="small">3.3 V SPI</text>
+  <path d="M1100 430H1220" class="line"/><text x="1115" y="407" class="small">Wi-Fi</text>
+  <rect x="490" y="820" width="620" height="48" rx="24" fill="#ffbd4a"/><text x="585" y="852" class="tag">NO CLOUD INFERENCE • STARTS WITH UNO Q</text>
+</svg>

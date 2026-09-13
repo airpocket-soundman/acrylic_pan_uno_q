@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1030" height="910" viewBox="0 0 1030 910" font-family="Arial, sans-serif">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="90" y="46" font-size="30" font-weight="700" fill="#10232e">Panel layout: 12 areas, 60 anchors, asymmetric clamp</text>
+<text x="90" y="78" font-size="18" fill="#58707c">400 × 300 × 5 mm acrylic, top view; coordinates in mm from the upper-left corner.</text>
+<rect x="90.0" y="120.0" width="880.0000000000001" height="660.0" fill="#eef7f8" stroke="#10232e" stroke-width="3"/>
+<rect x="90.0" y="120.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="98.0" y="142.0" font-size="15" fill="#58707c">Area 1</text>
+<rect x="310.0" y="120.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="318.0" y="142.0" font-size="15" fill="#58707c">Area 2</text>
+<rect x="530.0" y="120.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="538.0" y="142.0" font-size="15" fill="#58707c">Area 3</text>
+<rect x="750.0" y="120.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="758.0" y="142.0" font-size="15" fill="#58707c">Area 4</text>
+<rect x="90.0" y="340.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="98.0" y="362.0" font-size="15" fill="#58707c">Area 5</text>
+<rect x="310.0" y="340.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="318.0" y="362.0" font-size="15" fill="#58707c">Area 6</text>
+<rect x="530.0" y="340.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="538.0" y="362.0" font-size="15" fill="#58707c">Area 7</text>
+<rect x="750.0" y="340.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="758.0" y="362.0" font-size="15" fill="#58707c">Area 8</text>
+<rect x="90.0" y="560.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="98.0" y="582.0" font-size="15" fill="#58707c">Area 9</text>
+<rect x="310.0" y="560.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="318.0" y="582.0" font-size="15" fill="#58707c">Area 10</text>
+<rect x="530.0" y="560.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="538.0" y="582.0" font-size="15" fill="#58707c">Area 11</text>
+<rect x="750.0" y="560.0" width="220.00000000000003" height="220.00000000000003" fill="none" stroke="#7fa9b3" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="758.0" y="582.0" font-size="15" fill="#58707c">Area 12</text>
+<rect x="530.0" y="108.0" width="220.00000000000003" height="56.0" fill="#ffbd4a" fill-opacity=".75" stroke="#8d5200" stroke-width="2"/>
+<text x="640.0" y="98.0" font-size="16" font-weight="700" text-anchor="middle" fill="#8d5200">Clamp: x 200–300, y 0–20 (100 × 20 mm)</text>
+<rect x="139.0" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="139.0" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="139.0" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="139.0" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="139.0" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="139.0" y="719.0" width="12" height="12" fill="#ff654d"/>
+<circle cx="200.0" cy="230.0" r="8" fill="#07858a"/>
+<circle cx="200.0" cy="450.0" r="8" fill="#07858a"/>
+<circle cx="200.0" cy="670.0" r="8" fill="#07858a"/>
+<rect x="249.0" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="249.0" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="249.0" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="249.0" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="249.0" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="249.0" y="719.0" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="359.0" y="719.0" width="12" height="12" fill="#ff654d"/>
+<circle cx="420.0" cy="230.0" r="8" fill="#07858a"/>
+<circle cx="420.0" cy="450.0" r="8" fill="#07858a"/>
+<circle cx="420.0" cy="670.0" r="8" fill="#07858a"/>
+<rect x="469.00000000000006" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="469.00000000000006" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="469.00000000000006" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="469.00000000000006" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="469.00000000000006" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="469.00000000000006" y="719.0" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="191.0" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="579.0" y="719.0" width="12" height="12" fill="#ff654d"/>
+<circle cx="640.0" cy="230.0" r="8" fill="#07858a"/>
+<circle cx="640.0" cy="450.0" r="8" fill="#07858a"/>
+<circle cx="640.0" cy="670.0" r="8" fill="#07858a"/>
+<rect x="689.0" y="191.0" width="12" height="12" fill="#ff654d"/>
+<rect x="689.0" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="689.0" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="689.0" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="689.0" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="689.0" y="719.0" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="799.0000000000001" y="719.0" width="12" height="12" fill="#ff654d"/>
+<circle cx="860.0000000000001" cy="230.0" r="8" fill="#07858a"/>
+<circle cx="860.0000000000001" cy="450.0" r="8" fill="#07858a"/>
+<circle cx="860.0000000000001" cy="670.0" r="8" fill="#07858a"/>
+<rect x="909.0000000000001" y="169.0" width="12" height="12" fill="#ff654d"/>
+<rect x="909.0000000000001" y="279.0" width="12" height="12" fill="#ff654d"/>
+<rect x="909.0000000000001" y="389.0" width="12" height="12" fill="#ff654d"/>
+<rect x="909.0000000000001" y="499.00000000000006" width="12" height="12" fill="#ff654d"/>
+<rect x="909.0000000000001" y="609.0" width="12" height="12" fill="#ff654d"/>
+<rect x="909.0000000000001" y="719.0" width="12" height="12" fill="#ff654d"/>
+<polygon points="530.0,434.0 546.0,450.0 530.0,466.0 514.0,450.0" fill="#10232e"/>
+<text x="552.0" y="480.0" font-size="15" font-weight="700" fill="#10232e">KX134 at (200, 150)</text>
+<text x="90.0" y="804.0" font-size="14" text-anchor="middle" fill="#58707c">0</text>
+<text x="310.0" y="804.0" font-size="14" text-anchor="middle" fill="#58707c">100</text>
+<text x="530.0" y="804.0" font-size="14" text-anchor="middle" fill="#58707c">200</text>
+<text x="750.0" y="804.0" font-size="14" text-anchor="middle" fill="#58707c">300</text>
+<text x="970.0000000000001" y="804.0" font-size="14" text-anchor="middle" fill="#58707c">400</text>
+<text x="80.0" y="125.0" font-size="14" text-anchor="end" fill="#58707c">0</text>
+<text x="80.0" y="345.0" font-size="14" text-anchor="end" fill="#58707c">100</text>
+<text x="80.0" y="565.0" font-size="14" text-anchor="end" fill="#58707c">200</text>
+<text x="80.0" y="785.0" font-size="14" text-anchor="end" fill="#58707c">300</text>
+<circle cx="100" cy="842.0" r="8" fill="#07858a"/><text x="116" y="847.0" font-size="16" fill="#10232e">Area center (12)</text>
+<rect x="304" y="836.0" width="12" height="12" fill="#ff654d"/><text x="324" y="847.0" font-size="16" fill="#10232e">Near-corner anchor, 25 mm from the area edges (48)</text>
+<text x="90" y="876.0" font-size="15" fill="#58707c">The two anchors beside the clamp sit at y = 35 mm so they stay on the freely vibrating part of the sheet.</text>
+</svg>
